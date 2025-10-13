@@ -5,14 +5,14 @@ plugins {
 
 android {
     namespace = "io.github.lemcoder.koog"
-    compileSdk = 36
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     kotlin {
         jvmToolchain(17)
     }
 
     defaultConfig {
-        minSdk = 31
+        minSdk = libs.versions.minSdk.get().toInt()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")

@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "io.github.lemcoder.koog_leap_sdk"
-    compileSdk = 36
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     kotlin {
         jvmToolchain(17)
@@ -14,8 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "io.github.lemcoder.koog_leap_sdk"
-        minSdk = 31
-        targetSdk = 36
+        minSdk = libs.versions.minSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
 
