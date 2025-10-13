@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.lemcoder.koog_leap_sdk"
+    namespace = "io.github.lemcoder.koogleapsdk"
     compileSdk = libs.versions.compileSdk.get().toInt()
 
     kotlin {
@@ -56,4 +56,5 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.koog.agents)
     implementation(project(":koog"))
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 }

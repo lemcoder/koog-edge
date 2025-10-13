@@ -1,4 +1,4 @@
-package io.github.lemcoder.koog_leap_sdk.tools
+package io.github.lemcoder.koogleapsdk.agents.calculator
 
 import ai.koog.agents.core.dsl.builder.forwardTo
 import ai.koog.agents.core.dsl.builder.strategy

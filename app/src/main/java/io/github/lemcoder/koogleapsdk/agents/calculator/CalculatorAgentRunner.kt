@@ -1,4 +1,4 @@
-package io.github.lemcoder.koog_leap_sdk.tools
+package io.github.lemcoder.koogleapsdk.agents.calculator
 
 import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.agent.config.AIAgentConfig
@@ -7,19 +7,16 @@ import ai.koog.agents.core.tools.reflect.tools
 import ai.koog.agents.features.eventHandler.feature.handleEvents
 import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.executor.llms.SingleLLMPromptExecutor
-import ai.koog.prompt.executor.llms.all.simpleOpenRouterExecutor
 import io.github.lemcoder.koog.leap.LeapLLMParams
 import io.github.lemcoder.koog.leap.LeapModel
 import io.github.lemcoder.koog.leap.internal.getLeapLLMClient
+import io.github.lemcoder.koogleapsdk.agents.common.modelsPath
 
 object CalculatorAgentRunner {
     val toolRegistry = ToolRegistry {
         tools(CalculatorTools())
     }
-    private val apiKey = "***"
-
-    private val openRouterExecutor = simpleOpenRouterExecutor(apiKey)
-    private val leapExecutor = SingleLLMPromptExecutor(getLeapLLMClient("/tmp/models"))
+    private val leapExecutor = SingleLLMPromptExecutor(getLeapLLMClient(modelsPath))
     val agentConfig = AIAgentConfig(
         prompt = prompt(
             "calculator-agent-prompt",
