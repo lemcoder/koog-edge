@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +30,12 @@ fun WeatherToolScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        Text(
+            text = stringResource(R.string.weather_tool),
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.fillMaxWidth()
+        )
+
         var city by remember { mutableStateOf("") }
         OutlinedTextField(
             value = city,
