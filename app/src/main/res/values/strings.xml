@@ -8,4 +8,5 @@
     <string name="a_simple_calculator_tool">A simple calculator tool</string>
     <string name="weather">Weather</string>
     <string name="get_current_weather_information">Get current weather information</string>
+    <string name="enter_expression">Enter expression</string>
 </resources>

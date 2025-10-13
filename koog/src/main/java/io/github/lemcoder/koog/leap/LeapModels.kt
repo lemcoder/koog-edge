@@ -5,11 +5,9 @@ import ai.koog.prompt.llm.LLModel
 import io.github.lemcoder.koog.AndroidLocalModel
 import io.github.lemcoder.koog.provider.AndroidLocalLLMProvider
 
-sealed interface LeapModel : AndroidLocalModel {
-    val llmModel: LLModel
-
-    data object LFM2_1_2B_Tool : LeapModel {
-        override val llmModel = LLModel(
+sealed interface LeapModels : AndroidLocalModel {
+    data object Chat : AndroidLocalModel {
+        val LFM2_1_2B_Tool = LLModel(
             provider = AndroidLocalLLMProvider,
             id = "lfm2-1.2b-tool",
             capabilities = listOf(
@@ -18,14 +16,12 @@ sealed interface LeapModel : AndroidLocalModel {
             ),
             contextLength = 32_768,
         )
-
-        val MODEL_ID = "lfm2-1.2b-tool"
     }
 }
 
-internal fun getLeapLLModelById(modelId: String): LeapModel? {
+internal fun getLeapLLModelById(modelId: String): LLModel? {
     return when (modelId) {
-        LeapModel.LFM2_1_2B_Tool.MODEL_ID -> LeapModel.LFM2_1_2B_Tool
+        LeapModels.Chat.LFM2_1_2B_Tool.id -> LeapModels.Chat.LFM2_1_2B_Tool
         else -> null
     }
 }

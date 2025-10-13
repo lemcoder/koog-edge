@@ -8,15 +8,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import io.github.lemcoder.koogleapsdk.R
 
 @Composable
 fun CalculatorToolScreen(
@@ -29,10 +31,13 @@ fun CalculatorToolScreen(
             .padding(8.dp)
     ) {
         var expression by remember { mutableStateOf("") }
-        TextField(
+        OutlinedTextField(
             value = expression,
             onValueChange = {
                 expression = it
+            },
+            placeholder = {
+                Text(stringResource(R.string.enter_expression))
             },
             modifier = Modifier.fillMaxWidth()
         )
@@ -56,7 +61,10 @@ fun CalculatorToolScreen(
             onClick = {
                 onEvent(CalculatorToolEvent.Calculate(expression))
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            enabled = !state.isCalculating && expression.isNotBlank(),
         ) {
             Text(text = "Calculate")
         }

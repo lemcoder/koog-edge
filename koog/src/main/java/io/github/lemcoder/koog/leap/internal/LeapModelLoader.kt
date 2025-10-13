@@ -1,12 +1,11 @@
 package io.github.lemcoder.koog.leap.internal
 
+import ai.koog.prompt.llm.LLModel
 import ai.liquid.leap.LeapClient
 import ai.liquid.leap.LeapModelLoadingException
 import ai.liquid.leap.ModelLoadingOptions
 import ai.liquid.leap.ModelRunner
-import io.github.lemcoder.koog.AndroidLocalModel
 import io.github.lemcoder.koog.LocalModelLoader
-import io.github.lemcoder.koog.leap.LeapModel
 import io.github.lemcoder.koog.log.AndroidLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -30,18 +29,17 @@ internal class LeapModelLoader(
     override val state: Flow<LocalModelLoader.State> = loadingState
 
     override suspend fun loadModel(
-        model: AndroidLocalModel,
+        model: LLModel,
     ): ModelRunner? = withContext(Dispatchers.IO) {
         mutex.withLock {
             if (loadingJob?.isActive == true) {
                 throw IllegalStateException("A model is already loading")
             }
-            val leapModel = model as LeapModel
+            val leapModel = model
 
             val lastState = loadingState.replayCache.lastOrNull()
             if (lastState is LocalModelLoader.State.Success) {
-                val model = lastState.model as LeapModel
-                if (leapModel.llmModel.id == model.llmModel.id) {
+                if (leapModel.id == lastState.modelId) {
                     AndroidLogger.w("Model is already loaded")
                     return@withContext currentRunner!!
                 }
@@ -50,12 +48,16 @@ internal class LeapModelLoader(
             loadingJob = launch {
                 loadingState.emit(LocalModelLoader.State.Loading)
                 try {
-                    val modelFile = leapModel.resolveModelFile(modelsPath)
+                    val modelFile = File(
+                        modelsPath,
+                        "${model.id}.bundle"
+                    )
+
                     currentRunner = LeapClient.loadModel(
                         bundlePath = modelFile.path,
                         options = options
                     )
-                    loadingState.emit(LocalModelLoader.State.Success(leapModel))
+                    loadingState.emit(LocalModelLoader.State.Success(leapModel.id))
                 } catch (e: LeapModelLoadingException) {
                     AndroidLogger.error("Error loading model: ${e.message}", e)
                     loadingState.emit(LocalModelLoader.State.Error(e))
@@ -64,16 +66,5 @@ internal class LeapModelLoader(
             loadingJob?.join()
             currentRunner
         }
-    }
-}
-
-fun LeapModel.resolveModelFile(
-    modelsPath: String,
-): File {
-    return when (this) {
-        is LeapModel.LFM2_1_2B_Tool -> File(
-            modelsPath,
-            "${this.llmModel.id}.bundle"
-        )
     }
 }

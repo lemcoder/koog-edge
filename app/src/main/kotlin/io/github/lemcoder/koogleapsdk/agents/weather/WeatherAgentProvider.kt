@@ -15,7 +15,7 @@ import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.agents.features.eventHandler.feature.handleEvents
 import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.executor.llms.SingleLLMPromptExecutor
-import io.github.lemcoder.koog.leap.LeapModel
+import io.github.lemcoder.koog.leap.LeapModels
 import io.github.lemcoder.koog.leap.getLeapLLMClient
 import io.github.lemcoder.koogleapsdk.agents.common.AgentProvider
 import io.github.lemcoder.koogleapsdk.agents.common.ExitTool
@@ -119,7 +119,7 @@ internal class WeatherAgentProvider : AgentProvider {
                     """.trimIndent()
                 )
             },
-            model = LeapModel.LFM2_1_2B_Tool.llmModel,
+            model = LeapModels.Chat.LFM2_1_2B_Tool,
             maxAgentIterations = 50
         )
 
