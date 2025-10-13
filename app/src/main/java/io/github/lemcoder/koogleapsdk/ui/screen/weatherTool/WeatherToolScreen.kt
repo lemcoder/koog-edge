@@ -15,7 +15,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import io.github.lemcoder.koogleapsdk.R
 
 @Composable
 fun WeatherToolScreen(
@@ -34,7 +36,7 @@ fun WeatherToolScreen(
                 city = it
             },
             placeholder = {
-                Text("Enter city name")
+                Text(stringResource(R.string.enter_city_name))
             },
             modifier = Modifier.fillMaxWidth()
         )
@@ -52,7 +54,7 @@ fun WeatherToolScreen(
             }
         } else if (state.isLoading) {
             Text(
-                text = "Loading...",
+                text = stringResource(R.string.loading),
                 modifier = Modifier
                     .padding(vertical = 8.dp)
             )
@@ -64,7 +66,7 @@ fun WeatherToolScreen(
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "Get Weather")
+            Text(text = stringResource(R.string.get_weather))
         }
     }
 }

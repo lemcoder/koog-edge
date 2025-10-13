@@ -1,7 +1,9 @@
 package io.github.lemcoder.koogleapsdk.ui.screen.calculatorTool
 
 import androidx.lifecycle.viewModelScope
+import io.github.lemcoder.koogleapsdk.agents.calculator.CalculatorAgentProvider
 import io.github.lemcoder.koogleapsdk.ui.common.MviViewModel
+import io.github.lemcoder.koogleapsdk.ui.util.SnackbarUtil
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,7 +31,23 @@ class CalculatorToolViewModel : MviViewModel<CalculatorToolState, CalculatorTool
             }
             val prompt = "What is the result of: $expression"
             try {
-                val result = CalculatorAgentRunner.runAgent(prompt)
+                val agent = CalculatorAgentProvider().provideAgent(
+                    onToolCallEvent = {
+                        _state.update { state ->
+                            state.copy(
+                                toolCalls = _state.value.toolCalls + it
+                            )
+                        }
+                    },
+                    onErrorEvent = {
+                        SnackbarUtil.showSnackbar(
+                            "Error occurred: $it",
+                        )
+                    },
+                    onAssistantMessage = { "" }
+                )
+                val result = agent.run(prompt)
+
                 _state.update {
                     it.copy(
                         isCalculating = false,
