@@ -18,7 +18,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 
-class LeapModelLoader(
+internal class LeapModelLoader(
     private val modelsPath: String,
     private val options: ModelLoadingOptions = ModelLoadingOptions(),
 ) : LocalModelLoader<ModelRunner?> {

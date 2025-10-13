@@ -1,8 +1,6 @@
 package io.github.lemcoder.koog.leap.internal
 
 import ai.koog.agents.core.tools.ToolDescriptor
-import ai.koog.agents.core.tools.ToolParameterDescriptor
-import ai.koog.agents.core.tools.ToolParameterType
 import ai.koog.prompt.dsl.ModerationResult
 import ai.koog.prompt.dsl.Prompt
 import ai.koog.prompt.executor.clients.LLMClient
@@ -11,21 +9,18 @@ import ai.koog.prompt.llm.LLModel
 import ai.koog.prompt.message.Message
 import ai.koog.prompt.message.ResponseMetaInfo
 import ai.koog.prompt.streaming.StreamFrame
-import ai.liquid.leap.function.LeapFunction
-import ai.liquid.leap.function.LeapFunctionParameter
-import ai.liquid.leap.function.LeapFunctionParameterType
 import io.github.lemcoder.koog.leap.getLeapLLModelById
 import io.github.lemcoder.koog.leap.internal.util.koogToLeapParametersConverter
+import io.github.lemcoder.koog.leap.internal.util.leapFunctionConverter
 import io.github.lemcoder.koog.leap.internal.util.leapToKoogMessageConverter
 import io.github.lemcoder.koog.leap.internal.util.messageResponseToStreamFrameMapper
 import io.github.lemcoder.koog.log.AndroidLogger
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.onEach
 import kotlinx.datetime.Clock
 
-open class LeapLocalLLMClient(
+internal open class LeapLocalLLMClient(
     private val modelLoader: LeapModelLoader
 ) : LLMClient {
     override suspend fun execute(
@@ -55,7 +50,7 @@ open class LeapLocalLLMClient(
             conversation.appendToHistory(message)
         }
 
-        tools.map { it.toLeapFunction() }.forEach { function ->
+        tools.map(leapFunctionConverter::convert).forEach { function ->
             AndroidLogger.w("Registering: $function")
             conversation.registerFunction(function)
         }
@@ -112,15 +107,16 @@ open class LeapLocalLLMClient(
             conversation.appendToHistory(message)
         }
 
-        tools.map { it.toLeapFunction() }.forEach { function ->
+        tools.map(leapFunctionConverter::convert).forEach { function ->
             AndroidLogger.w("Registering: $function")
             conversation.registerFunction(function)
         }
 
+        // TODO Support params
         conversation.generateResponse(
             latestMessage,
-            // koogToLeapParametersConverter.convert(prompt.params)
-        ).onEach { messageResponse ->
+            koogToLeapParametersConverter.convert(prompt.params)
+        ).collect { messageResponse ->
             val frames = messageResponseToStreamFrameMapper.convert(messageResponse)
             frames.forEach { frame -> emit(frame) }
         }
@@ -133,40 +129,6 @@ open class LeapLocalLLMClient(
         TODO()
     }
 }
-
-private fun ToolDescriptor.toLeapFunction() = LeapFunction(
-    name = name,
-    description = description,
-    parameters = requiredParameters.map { it.toLeapParameter(false) } +
-            optionalParameters.map { it.toLeapParameter(true) }
-)
-
-private fun ToolParameterDescriptor.toLeapParameter(isOptional: Boolean): LeapFunctionParameter =
-    LeapFunctionParameter(
-        name = name,
-        type = type.toLeapFunctionParameterType(),
-        description = description,
-        optional = isOptional
-    )
-
-private fun ToolParameterType.toLeapFunctionParameterType(): LeapFunctionParameterType =
-    when (this) {
-        ToolParameterType.Boolean -> LeapFunctionParameterType.Boolean()
-        is ToolParameterType.Enum -> throw NotImplementedError("Enum parameter types are not supported")
-        ToolParameterType.Float -> LeapFunctionParameterType.Number()
-        ToolParameterType.Integer -> LeapFunctionParameterType.Integer()
-        is ToolParameterType.List -> LeapFunctionParameterType.Array(
-            itemType = itemsType.toLeapFunctionParameterType(),
-        )
-
-        is ToolParameterType.Object -> LeapFunctionParameterType.Object(
-            properties = properties.associate { it.name to it.type.toLeapFunctionParameterType() },
-            required = requiredProperties,
-        )
-
-        ToolParameterType.String -> LeapFunctionParameterType.String()
-    }
-
 
 private fun StreamFrame.toMessageResponse(): Message.Response {
     val metaInfo = ResponseMetaInfo(timestamp = Clock.System.now())

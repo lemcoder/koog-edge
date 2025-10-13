@@ -23,7 +23,7 @@ sealed interface LeapModel : AndroidLocalModel {
     }
 }
 
-fun getLeapLLModelById(modelId: String): LeapModel? {
+internal fun getLeapLLModelById(modelId: String): LeapModel? {
     return when (modelId) {
         LeapModel.LFM2_1_2B_Tool.MODEL_ID -> LeapModel.LFM2_1_2B_Tool
         else -> null

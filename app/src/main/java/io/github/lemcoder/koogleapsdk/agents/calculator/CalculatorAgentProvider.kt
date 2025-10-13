@@ -16,7 +16,7 @@ import ai.koog.agents.features.eventHandler.feature.handleEvents
 import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.executor.clients.openai.OpenAIModels
 import ai.koog.prompt.executor.llms.SingleLLMPromptExecutor
-import io.github.lemcoder.koog.leap.internal.getLeapLLMClient
+import io.github.lemcoder.koog.leap.getLeapLLMClient
 import io.github.lemcoder.koogleapsdk.agents.common.AgentProvider
 import io.github.lemcoder.koogleapsdk.agents.common.ExitTool
 import io.github.lemcoder.koogleapsdk.agents.common.modelsPath
@@ -124,7 +124,7 @@ internal class CalculatorAgentProvider : AgentProvider {
             toolRegistry = toolRegistry,
         ) {
             handleEvents {
-                onToolCall { ctx ->
+                onToolCallStarting { ctx ->
                     onToolCallEvent("Tool ${ctx.tool.name}, args ${ctx.toolArgs}")
                 }
 
