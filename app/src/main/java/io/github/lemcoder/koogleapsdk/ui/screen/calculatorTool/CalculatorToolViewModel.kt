@@ -1,7 +1,6 @@
 package io.github.lemcoder.koogleapsdk.ui.screen.calculatorTool
 
 import androidx.lifecycle.viewModelScope
-import io.github.lemcoder.koogleapsdk.agents.calculator.CalculatorAgentRunner
 import io.github.lemcoder.koogleapsdk.ui.common.MviViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

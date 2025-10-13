@@ -37,7 +37,7 @@ fun CalculatorToolScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        if (state.toolCalls.isEmpty()) {
+        if (state.toolCalls.isEmpty() || state.isCalculating) {
             Spacer(modifier = Modifier.weight(1f))
         } else {
             LazyColumn(
