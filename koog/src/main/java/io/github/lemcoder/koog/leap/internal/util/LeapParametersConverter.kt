@@ -6,7 +6,7 @@ import io.github.lemcoder.koog.leap.LeapLLMParams
 
 internal val koogToLeapParametersConverter =
     Converter<LLMParams, GenerationOptions> { params ->
-        val leapParams = (params as LeapLLMParams)
+        val leapParams = (params as? LeapLLMParams) ?: return@Converter GenerationOptions()
         GenerationOptions(
             temperature = leapParams.temperature?.toFloat(),
             topP = leapParams.topP,

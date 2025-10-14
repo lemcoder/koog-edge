@@ -17,6 +17,7 @@ import io.github.lemcoder.koog.leap.internal.util.messageResponseToStreamFrameMa
 import io.github.lemcoder.koog.log.AndroidLogger
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.Clock
 
@@ -63,7 +64,9 @@ internal open class LeapLocalLLMClient(
             conversation.generateResponse(
                 latestMessage,
                 koogToLeapParametersConverter.convert(prompt.params)
-            ).collect { messageResponse ->
+            ).catch {
+                AndroidLogger.error("Error during response generation", it)
+            }.collect { messageResponse ->
                 val frames = messageResponseToStreamFrameMapper.convert(messageResponse)
                 frames.forEach { frame ->
                     AndroidLogger.w { frame.toMessageResponse().content }

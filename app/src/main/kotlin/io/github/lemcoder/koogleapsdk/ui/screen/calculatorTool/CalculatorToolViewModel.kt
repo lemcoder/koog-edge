@@ -1,5 +1,6 @@
 package io.github.lemcoder.koogleapsdk.ui.screen.calculatorTool
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import io.github.lemcoder.koogleapsdk.agents.calculator.CalculatorAgentProvider
 import io.github.lemcoder.koogleapsdk.ui.common.MviViewModel
@@ -55,7 +56,12 @@ class CalculatorToolViewModel : MviViewModel<CalculatorToolState, CalculatorTool
                     )
                 }
             } catch (ex: Exception) {
-                // TODO handle errors
+                _state.update {
+                    it.copy(
+                        isCalculating = false,
+                    )
+                }
+                Log.e(this@CalculatorToolViewModel::class.simpleName, "Error occurred", ex)
             }
         }
     }

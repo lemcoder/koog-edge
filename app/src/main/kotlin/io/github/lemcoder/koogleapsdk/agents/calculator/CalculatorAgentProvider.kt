@@ -4,22 +4,22 @@ import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.agent.config.AIAgentConfig
 import ai.koog.agents.core.dsl.builder.forwardTo
 import ai.koog.agents.core.dsl.builder.strategy
-import ai.koog.agents.core.dsl.extension.nodeExecuteMultipleTools
-import ai.koog.agents.core.dsl.extension.nodeLLMCompressHistory
-import ai.koog.agents.core.dsl.extension.nodeLLMRequestMultiple
-import ai.koog.agents.core.dsl.extension.nodeLLMSendMultipleToolResults
+import ai.koog.agents.core.dsl.extension.nodeExecuteTool
+import ai.koog.agents.core.dsl.extension.nodeLLMRequest
+import ai.koog.agents.core.dsl.extension.nodeLLMSendToolResult
 import ai.koog.agents.core.dsl.extension.onAssistantMessage
-import ai.koog.agents.core.dsl.extension.onMultipleToolCalls
-import ai.koog.agents.core.environment.ReceivedToolResult
+import ai.koog.agents.core.dsl.extension.onToolCall
 import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.agents.features.eventHandler.feature.handleEvents
 import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.executor.llms.SingleLLMPromptExecutor
+import io.github.lemcoder.koog.leap.LeapLLMParams
 import io.github.lemcoder.koog.leap.LeapModels
 import io.github.lemcoder.koog.leap.getLeapLLMClient
 import io.github.lemcoder.koogleapsdk.agents.common.AgentProvider
 import io.github.lemcoder.koogleapsdk.agents.common.ExitTool
 import io.github.lemcoder.koogleapsdk.agents.common.modelsPath
+import io.ktor.http.parameters
 
 /**
  * Factory for creating calculator agents
@@ -47,73 +47,44 @@ internal class CalculatorAgentProvider : AgentProvider {
 
         @Suppress("DuplicatedCode")
         val strategy = strategy(title) {
-            val nodeRequestLLM by nodeLLMRequestMultiple()
-            val nodeAssistantMessage by node<String, String> { message -> onAssistantMessage(message) }
-            val nodeExecuteToolMultiple by nodeExecuteMultipleTools(parallelTools = true)
-            val nodeSendToolResultMultiple by nodeLLMSendMultipleToolResults()
-            val nodeCompressHistory by nodeLLMCompressHistory<List<ReceivedToolResult>>()
+            val nodeRequestLLM by nodeLLMRequest()
+            val nodeToolExecute by nodeExecuteTool()
 
             edge(nodeStart forwardTo nodeRequestLLM)
 
             edge(
-                nodeRequestLLM forwardTo nodeExecuteToolMultiple
-                        onMultipleToolCalls { true }
+                nodeRequestLLM forwardTo nodeToolExecute
+                        onToolCall { ctx ->
+                    onToolCallEvent("Tool ${ctx.tool}")
+                    true
+                }
             )
 
             edge(
-                nodeRequestLLM forwardTo nodeAssistantMessage
-                        transformed { it.first() }
-                        onAssistantMessage { true }
+                nodeToolExecute forwardTo nodeFinish
+                        transformed { it.result!!.toString() }
             )
-
-            edge(nodeAssistantMessage forwardTo nodeRequestLLM)
-
-            // Finish condition - if exit tool is called, go to nodeFinish with tool call result.
-            edge(
-                nodeExecuteToolMultiple forwardTo nodeFinish
-                        onCondition { it.singleOrNull()?.tool == ExitTool.name }
-                        transformed { it.single().result!!.toString() }
-            )
-
-            edge(
-                (nodeExecuteToolMultiple forwardTo nodeCompressHistory)
-                        onCondition { _ -> llm.readSession { prompt.messages.size > 100 } }
-            )
-
-            edge(nodeCompressHistory forwardTo nodeSendToolResultMultiple)
-
-            edge(
-                (nodeExecuteToolMultiple forwardTo nodeSendToolResultMultiple)
-                        onCondition { _ -> llm.readSession { prompt.messages.size <= 100 } }
-            )
-
-            edge(
-                (nodeSendToolResultMultiple forwardTo nodeExecuteToolMultiple)
-                        onMultipleToolCalls { true }
-            )
-
-            edge(
-                nodeSendToolResultMultiple forwardTo nodeAssistantMessage
-                        transformed { it.first() }
-                        onAssistantMessage { true }
-            )
-
         }
 
         // Create agent config with proper prompt
         val agentConfig = AIAgentConfig(
-            prompt = prompt("test") {
+            prompt = prompt(
+                "test",
+                params = LeapLLMParams(
+                    temperature = 0f
+                )
+            ) {
                 system(
                     """
                     You are a calculator.
-                    You will be provided math problems by the user.
-                    Use tools at your disposal to solve them.
-                    Provide the answer and ask for the next problem until the user asks to stop.
+                    You will be provided a single math problem by the user.
+                    Use tools at your disposal to solve it.
+                    Provide only the answer and finish.
                     """.trimIndent()
                 )
             },
             model = LeapModels.Chat.LFM2_1_2B_Tool,
-            maxAgentIterations = 50
+            maxAgentIterations = 10,
         )
 
         // Return the agent
