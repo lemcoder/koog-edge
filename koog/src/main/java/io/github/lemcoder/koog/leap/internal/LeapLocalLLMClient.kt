@@ -58,7 +58,9 @@ internal open class LeapLocalLLMClient(
 
         val latestMessage = leapToKoogMessageConverter.convert(prompt.messages.last())
 
-        val responseBuffer = mutableListOf<Message.Response>()
+        val responseText = StringBuilder()
+        val toolCalls = mutableListOf<Message.Tool.Call>()
+        var finishReason: String? = null
 
         coroutineScope {
             conversation.generateResponse(
@@ -69,16 +71,34 @@ internal open class LeapLocalLLMClient(
             }.collect { messageResponse ->
                 val frames = messageResponseToStreamFrameMapper.convert(messageResponse)
                 frames.forEach { frame ->
-                    AndroidLogger.w { frame.toMessageResponse().content }
-
-                    runCatching {
-                        responseBuffer.add(frame.toMessageResponse())
+                    AndroidLogger.w("Received frame: $frame")
+                    when (frame) {
+                        is StreamFrame.Append -> responseText.append(frame.text)
+                        is StreamFrame.End -> finishReason = frame.finishReason
+                        is StreamFrame.ToolCall -> toolCalls.add(frame.toMessageResponse() as Message.Tool.Call)
                     }
                 }
             }
         }
 
-        return responseBuffer
+        if (responseText.isEmpty()) {
+            if (toolCalls.isNotEmpty()) {
+                AndroidLogger.w("Model returned only tool calls, no assistant response.")
+                return toolCalls
+            }
+            AndroidLogger.error("Model returned empty response. Frames: $toolCalls, finishReason: $finishReason")
+            throw IllegalStateException("Model returned empty response. Check input prompt and model configuration.")
+        }
+
+        val metaInfo = ResponseMetaInfo(timestamp = Clock.System.now())
+        val result = Message.Assistant(
+            content = responseText.toString(),
+            metaInfo = metaInfo,
+            attachments = listOf(),
+            finishReason = finishReason.orEmpty()
+        )
+
+        return listOf(result) + toolCalls
     }
 
 

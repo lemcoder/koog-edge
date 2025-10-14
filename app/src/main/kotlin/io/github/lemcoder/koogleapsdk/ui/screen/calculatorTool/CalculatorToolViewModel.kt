@@ -45,7 +45,15 @@ class CalculatorToolViewModel : MviViewModel<CalculatorToolState, CalculatorTool
                             "Error occurred: $it",
                         )
                     },
-                    onAssistantMessage = { "" }
+                    onAssistantMessage = {
+                        Log.d("CalculatorToolViewModel", "Assistant message: $it")
+                        _state.update { state ->
+                            state.copy(
+                                answer = it
+                            )
+                        }
+                        it
+                    }
                 )
                 val result = agent.run(prompt)
 

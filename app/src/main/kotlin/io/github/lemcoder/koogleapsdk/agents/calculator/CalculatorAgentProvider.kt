@@ -49,6 +49,7 @@ internal class CalculatorAgentProvider : AgentProvider {
         val strategy = strategy(title) {
             val nodeRequestLLM by nodeLLMRequest()
             val nodeToolExecute by nodeExecuteTool()
+            val nodeSendToolResult by nodeLLMSendToolResult()
 
             edge(nodeStart forwardTo nodeRequestLLM)
 
@@ -61,8 +62,15 @@ internal class CalculatorAgentProvider : AgentProvider {
             )
 
             edge(
-                nodeToolExecute forwardTo nodeFinish
-                        transformed { it.result!!.toString() }
+                nodeToolExecute forwardTo nodeSendToolResult
+            )
+
+            edge(
+                nodeSendToolResult forwardTo nodeFinish
+                        onAssistantMessage { ctx ->
+                    onAssistantMessage(ctx.content)
+                    true
+                }
             )
         }
 
@@ -79,7 +87,8 @@ internal class CalculatorAgentProvider : AgentProvider {
                     You are a calculator.
                     You will be provided a single math problem by the user.
                     Use tools at your disposal to solve it.
-                    Provide only the answer and finish.
+                    If you reference the result of a tool call in your answer, always explain it to the user in a clear sentence, e.g. 'The result is 4.'
+                    Never assume the user can see the raw tool result.
                     """.trimIndent()
                 )
             },

@@ -63,6 +63,15 @@ fun CalculatorToolScreen(
                 items(state.toolCalls) {
                     Text("Tool call: $it")
                 }
+
+                item {
+                    Spacer(modifier = Modifier.padding(4.dp))
+                    Text(
+                        text = "Answer: ${state.answer}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
         }
 
