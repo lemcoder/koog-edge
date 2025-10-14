@@ -1,5 +1,6 @@
 package io.github.lemcoder.koogleapsdk.ui.screen.weatherTool
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,7 +29,8 @@ fun WeatherToolScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
             text = stringResource(R.string.weather_tool),
@@ -36,7 +38,7 @@ fun WeatherToolScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        var city by remember { mutableStateOf("") }
+        var city by remember { mutableStateOf("New York, 2025-10-22, DAILY") }
         OutlinedTextField(
             value = city,
             onValueChange = {

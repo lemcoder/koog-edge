@@ -41,7 +41,16 @@ class WeatherToolViewModel : MviViewModel<WeatherToolState, WeatherToolEvent>() 
                             "Error occurred: $it",
                         )
                     },
-                    onAssistantMessage = { "" }
+                    onAssistantMessage = {
+                        Log.w(this@WeatherToolViewModel::class.simpleName, "Assistant: $it")
+                        val explained = it
+                        _state.update { state ->
+                            state.copy(
+                                weatherInfo = explained,
+                            )
+                        }
+                        explained
+                    }
                 )
                 val result = agent.run(prompt)
 

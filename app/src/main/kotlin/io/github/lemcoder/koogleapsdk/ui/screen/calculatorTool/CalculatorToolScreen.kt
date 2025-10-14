@@ -39,7 +39,7 @@ fun CalculatorToolScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        var expression by remember { mutableStateOf("") }
+        var expression by remember { mutableStateOf("2 * 2 + 2") }
         OutlinedTextField(
             value = expression,
             onValueChange = {

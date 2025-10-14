@@ -20,6 +20,7 @@ import io.github.lemcoder.koog.leap.getLeapLLMClient
 import io.github.lemcoder.koogleapsdk.agents.common.AgentProvider
 import io.github.lemcoder.koogleapsdk.agents.common.ExitTool
 import io.github.lemcoder.koogleapsdk.agents.common.modelsPath
+import kotlinx.datetime.Clock
 
 /**
  * Factory for creating weather forecast agents
@@ -51,7 +52,6 @@ internal class WeatherAgentProvider : AgentProvider {
             val nodeAssistantMessage by node<String, String> { message -> onAssistantMessage(message) }
             val nodeExecuteToolMultiple by nodeExecuteMultipleTools(parallelTools = true)
             val nodeSendToolResultMultiple by nodeLLMSendMultipleToolResults()
-            val nodeCompressHistory by nodeLLMCompressHistory<List<ReceivedToolResult>>()
 
             edge(nodeStart forwardTo nodeRequestLLM)
 
@@ -66,30 +66,8 @@ internal class WeatherAgentProvider : AgentProvider {
                         onAssistantMessage { true }
             )
 
-            edge(nodeAssistantMessage forwardTo nodeRequestLLM)
-
-            // Finish condition - if exit tool is called, go to nodeFinish with tool call result.
             edge(
-                nodeExecuteToolMultiple forwardTo nodeFinish
-                        onCondition { it.singleOrNull()?.tool == ExitTool.name }
-                        transformed { it.single().result!!.toString() }
-            )
-
-            edge(
-                (nodeExecuteToolMultiple forwardTo nodeCompressHistory)
-                        onCondition { _ -> llm.readSession { prompt.messages.size > 100 } }
-            )
-
-            edge(nodeCompressHistory forwardTo nodeSendToolResultMultiple)
-
-            edge(
-                (nodeExecuteToolMultiple forwardTo nodeSendToolResultMultiple)
-                        onCondition { _ -> llm.readSession { prompt.messages.size <= 100 } }
-            )
-
-            edge(
-                (nodeSendToolResultMultiple forwardTo nodeExecuteToolMultiple)
-                        onMultipleToolCalls { true }
+                nodeExecuteToolMultiple forwardTo nodeSendToolResultMultiple
             )
 
             edge(
@@ -98,6 +76,10 @@ internal class WeatherAgentProvider : AgentProvider {
                         onAssistantMessage { true }
             )
 
+            edge(
+                nodeAssistantMessage forwardTo nodeFinish
+                        transformed { it }
+            )
         }
 
         // Create agent config with proper prompt
@@ -107,15 +89,13 @@ internal class WeatherAgentProvider : AgentProvider {
                     """
                     You are a helpful weather assistant.
                     You can provide weather forecasts for any location in the world and help the user plan their activities.
-                    
+                    ALWAYS use the available tools to get weather data. NEVER say you do not have access to weather data. 
+                    When you receive a tool result, always explain it to the user in natural language.
                     Use the tools at your disposal to:
                     1. Get the current date and time
                     2. Add days, hours, or minutes to a date
                     3. Get weather forecasts for specific locations and dates
-                    
-                    ALWAYS USE current_datetime and add_datetime tools to perform date operations, do not try to guess.
-                    
-                    When providing weather forecasts, be helpful and informative, explaining the weather conditions in a clear way.
+                    Do not say you lack access to data; always use the tools.
                     """.trimIndent()
                 )
             },
