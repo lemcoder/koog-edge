@@ -11,11 +11,9 @@ internal val leapParameterTypeConverter =
 private fun ToolParameterType.toLeapFunctionParameterType(): LeapFunctionParameterType =
     when (this) {
         ToolParameterType.Boolean -> LeapFunctionParameterType.Boolean()
-        is ToolParameterType.Enum -> LeapFunctionParameterType.Object(
-            properties = mapOf(name to LeapFunctionParameterType.String()),
-            required = listOf(name),
+        is ToolParameterType.Enum -> LeapFunctionParameterType.String(
+            enumValues = entries.toList()
         )
-
         ToolParameterType.Float -> LeapFunctionParameterType.Number()
         ToolParameterType.Integer -> LeapFunctionParameterType.Integer()
         is ToolParameterType.List -> LeapFunctionParameterType.Array(
