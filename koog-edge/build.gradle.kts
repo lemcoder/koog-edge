@@ -1,7 +1,11 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    id("maven-publish")
 }
+
+group = "io.github.lemcoder"
+version = "0.0.1"
 
 android {
     namespace = "io.github.lemcoder.koog"
@@ -13,8 +17,6 @@ android {
 
     defaultConfig {
         minSdk = libs.versions.minSdk.get().toInt()
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
 
@@ -30,7 +32,28 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
     implementation(libs.leap.sdk)
     implementation(libs.koog.agents.core)
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("release") {
+            afterEvaluate {
+                from(components["release"])
+            }
+
+            groupId = "io.github.lemcoder.koog"
+            artifactId = "koog-edge"
+            version = "0.0.1"
+        }
+    }
+
+    repositories {
+        mavenLocal()
+        maven {
+            name = "localRepo"
+            url = rootDir.toURI()
+        }
+    }
 }
