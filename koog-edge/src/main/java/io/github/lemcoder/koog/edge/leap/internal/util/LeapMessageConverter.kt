@@ -1,4 +1,4 @@
-package io.github.lemcoder.koog.leap.internal.util
+package io.github.lemcoder.koog.edge.leap.internal.util
 
 import ai.koog.prompt.message.Message
 import ai.koog.prompt.streaming.StreamFrame
@@ -12,6 +12,7 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
+import kotlin.collections.iterator
 
 internal val leapToKoogMessageConverter = Converter<Message, ChatMessage> { message ->
     when (message) {

@@ -1,4 +1,4 @@
-package io.github.lemcoder.koog.log
+package io.github.lemcoder.koog.edge.log
 
 import android.util.Log
 

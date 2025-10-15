@@ -1,4 +1,4 @@
-package io.github.lemcoder.koog
+package io.github.lemcoder.koog.edge
 
 import ai.koog.prompt.llm.LLModel
 import kotlinx.coroutines.flow.Flow

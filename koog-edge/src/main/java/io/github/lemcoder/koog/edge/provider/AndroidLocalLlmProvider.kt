@@ -1,4 +1,4 @@
-package io.github.lemcoder.koog.provider
+package io.github.lemcoder.koog.edge.provider
 
 import ai.koog.prompt.llm.LLMProvider
 

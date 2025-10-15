@@ -1,4 +1,4 @@
-package io.github.lemcoder.koog
+package io.github.lemcoder.koog.edge
 
 import ai.koog.prompt.executor.clients.LLModelDefinitions
 

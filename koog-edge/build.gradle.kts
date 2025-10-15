@@ -32,5 +32,5 @@ android {
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.leap.sdk)
-    implementation(libs.koog.agents)
+    implementation(libs.koog.agents.core)
 }

@@ -1,12 +1,12 @@
-package io.github.lemcoder.koog.leap.internal
+package io.github.lemcoder.koog.edge.leap.internal
 
 import ai.koog.prompt.llm.LLModel
 import ai.liquid.leap.LeapClient
 import ai.liquid.leap.LeapModelLoadingException
 import ai.liquid.leap.ModelLoadingOptions
 import ai.liquid.leap.ModelRunner
-import io.github.lemcoder.koog.LocalModelLoader
-import io.github.lemcoder.koog.log.AndroidLogger
+import io.github.lemcoder.koog.edge.LocalModelLoader
+import io.github.lemcoder.koog.edge.log.AndroidLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow

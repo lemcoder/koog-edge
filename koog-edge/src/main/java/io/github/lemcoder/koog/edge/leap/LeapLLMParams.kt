@@ -1,4 +1,4 @@
-package io.github.lemcoder.koog.leap
+package io.github.lemcoder.koog.edge.leap
 
 import ai.koog.prompt.params.LLMParams
 

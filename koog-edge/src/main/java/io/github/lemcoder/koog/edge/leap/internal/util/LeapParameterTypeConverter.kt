@@ -1,4 +1,4 @@
-package io.github.lemcoder.koog.leap.internal.util
+package io.github.lemcoder.koog.edge.leap.internal.util
 
 import ai.koog.agents.core.tools.ToolParameterType
 import ai.liquid.leap.function.LeapFunctionParameterType

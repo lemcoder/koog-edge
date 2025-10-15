@@ -1,8 +1,8 @@
-package io.github.lemcoder.koog.leap.internal.util
+package io.github.lemcoder.koog.edge.leap.internal.util
 
 import ai.koog.prompt.params.LLMParams
 import ai.liquid.leap.GenerationOptions
-import io.github.lemcoder.koog.leap.LeapLLMParams
+import io.github.lemcoder.koog.edge.leap.LeapLLMParams
 
 internal val koogToLeapParametersConverter =
     Converter<LLMParams, GenerationOptions> { params ->

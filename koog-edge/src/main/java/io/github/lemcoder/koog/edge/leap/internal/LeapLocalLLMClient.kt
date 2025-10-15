@@ -1,4 +1,4 @@
-package io.github.lemcoder.koog.leap.internal
+package io.github.lemcoder.koog.edge.leap.internal
 
 import ai.koog.agents.core.tools.ToolDescriptor
 import ai.koog.prompt.dsl.ModerationResult
@@ -9,12 +9,12 @@ import ai.koog.prompt.llm.LLModel
 import ai.koog.prompt.message.Message
 import ai.koog.prompt.message.ResponseMetaInfo
 import ai.koog.prompt.streaming.StreamFrame
-import io.github.lemcoder.koog.leap.getLeapLLModelById
-import io.github.lemcoder.koog.leap.internal.util.koogToLeapParametersConverter
-import io.github.lemcoder.koog.leap.internal.util.leapFunctionConverter
-import io.github.lemcoder.koog.leap.internal.util.leapToKoogMessageConverter
-import io.github.lemcoder.koog.leap.internal.util.messageResponseToStreamFrameMapper
-import io.github.lemcoder.koog.log.AndroidLogger
+import io.github.lemcoder.koog.edge.leap.getLeapLLModelById
+import io.github.lemcoder.koog.edge.leap.internal.util.koogToLeapParametersConverter
+import io.github.lemcoder.koog.edge.leap.internal.util.leapFunctionConverter
+import io.github.lemcoder.koog.edge.leap.internal.util.leapToKoogMessageConverter
+import io.github.lemcoder.koog.edge.leap.internal.util.messageResponseToStreamFrameMapper
+import io.github.lemcoder.koog.edge.log.AndroidLogger
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch

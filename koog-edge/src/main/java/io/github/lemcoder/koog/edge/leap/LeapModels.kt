@@ -1,9 +1,9 @@
-package io.github.lemcoder.koog.leap
+package io.github.lemcoder.koog.edge.leap
 
 import ai.koog.prompt.llm.LLMCapability
 import ai.koog.prompt.llm.LLModel
-import io.github.lemcoder.koog.AndroidLocalModel
-import io.github.lemcoder.koog.provider.AndroidLocalLLMProvider
+import io.github.lemcoder.koog.edge.AndroidLocalModel
+import io.github.lemcoder.koog.edge.provider.AndroidLocalLLMProvider
 
 sealed interface LeapModels : AndroidLocalModel {
     data object Chat : AndroidLocalModel {
