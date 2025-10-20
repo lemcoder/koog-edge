@@ -2,6 +2,7 @@ package io.github.lemcoder.koog.edge.leap.internal.util
 
 import ai.koog.prompt.message.Message
 import ai.koog.prompt.streaming.StreamFrame
+import ai.koog.prompt.streaming.StreamFrame.*
 import ai.liquid.leap.message.ChatMessage
 import ai.liquid.leap.message.ChatMessageContent
 import ai.liquid.leap.message.MessageResponse
@@ -42,15 +43,15 @@ internal val messageResponseToStreamFrameMapper =
     Converter<MessageResponse, List<StreamFrame>> { response ->
         when (response) {
             is MessageResponse.Chunk -> listOf(
-                StreamFrame.Append(
+                Append(
                     text = response.text
                 )
             )
 
-            is MessageResponse.Complete -> listOf(StreamFrame.End())
+            is MessageResponse.Complete -> listOf(End())
 
             is MessageResponse.FunctionCalls -> response.functionCalls.map { firstCall ->
-                StreamFrame.ToolCall(
+                ToolCall(
                     id = null,
                     name = firstCall.name,
                     content = firstCall.arguments.toJsonObjectString()
@@ -58,6 +59,7 @@ internal val messageResponseToStreamFrameMapper =
             }
 
             is MessageResponse.ReasoningChunk -> emptyList() // TODO Ignore reasoning chunks for now
+            is MessageResponse.AudioSample -> emptyList() // TODO Ignore audio samples for now
         }
     }
 

@@ -56,9 +56,9 @@ dependencies {
     androidTestImplementation(platform(libs.androidx.compose.bom))
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.koog.agents)
-    implementation(files("libs/koog-edge-0.0.1.aar"))
+    implementation(libs.leap.sdk)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-
+    implementation(project(":koog-edge"))
     implementation(libs.kotlinx.serialization.core)
     implementation(libs.kotlinx.serialization.json)
 }

@@ -1,16 +1,17 @@
 package io.github.lemcoder.koogleapsdk.agents.calculator
 
 import ai.koog.agents.core.agent.AIAgent
+import ai.koog.agents.core.agent.asAssistantMessage
+import ai.koog.agents.core.agent.compressHistory
 import ai.koog.agents.core.agent.config.AIAgentConfig
-import ai.koog.agents.core.dsl.builder.forwardTo
-import ai.koog.agents.core.dsl.builder.strategy
-import ai.koog.agents.core.dsl.extension.nodeExecuteTool
-import ai.koog.agents.core.dsl.extension.nodeLLMRequest
-import ai.koog.agents.core.dsl.extension.nodeLLMSendToolResult
-import ai.koog.agents.core.dsl.extension.onAssistantMessage
-import ai.koog.agents.core.dsl.extension.onToolCall
+import ai.koog.agents.core.agent.containsToolCalls
+import ai.koog.agents.core.agent.executeMultipleTools
+import ai.koog.agents.core.agent.extractToolCalls
+import ai.koog.agents.core.agent.functionalStrategy
+import ai.koog.agents.core.agent.latestTokenUsage
+import ai.koog.agents.core.agent.requestLLMMultiple
+import ai.koog.agents.core.agent.sendMultipleToolResults
 import ai.koog.agents.core.tools.ToolRegistry
-import ai.koog.agents.features.eventHandler.feature.handleEvents
 import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.executor.llms.SingleLLMPromptExecutor
 import io.github.lemcoder.koog.edge.leap.LeapLLMParams
@@ -21,7 +22,7 @@ import io.github.lemcoder.koogleapsdk.agents.common.ExitTool
 import io.github.lemcoder.koogleapsdk.agents.common.modelsPath
 
 /**
- * Factory for creating calculator agents
+ * Factory for creating calculator agents (graphless strategy)
  */
 internal class CalculatorAgentProvider : AgentProvider {
     override val title: String = "Calculator"
@@ -34,43 +35,35 @@ internal class CalculatorAgentProvider : AgentProvider {
     ): AIAgent<String, String> {
         val leapExecutor = SingleLLMPromptExecutor(getLeapLLMClient(modelsPath))
 
-        // Create tool registry with calculator tools
         val toolRegistry = ToolRegistry {
+            tool(CalculatorTools.DivideTool)
             tool(CalculatorTools.PlusTool)
             tool(CalculatorTools.MinusTool)
-            tool(CalculatorTools.DivideTool)
             tool(CalculatorTools.MultiplyTool)
-
             tool(ExitTool)
         }
 
         @Suppress("DuplicatedCode")
-        val strategy = strategy(title) {
-            val nodeRequestLLM by nodeLLMRequest()
-            val nodeToolExecute by nodeExecuteTool()
-            val nodeSendToolResult by nodeLLMSendToolResult()
+        val strategy = functionalStrategy<String, String>(title) { input ->
+            var responses = requestLLMMultiple(input)
 
-            edge(nodeStart forwardTo nodeRequestLLM)
+            while (responses.containsToolCalls()) {
+                val tools = extractToolCalls(responses)
 
-            edge(
-                nodeRequestLLM forwardTo nodeToolExecute
-                        onToolCall { ctx ->
-                    onToolCallEvent("Tool ${ctx.tool}")
-                    true
+                tools.forEach { toolCall ->
+                    onToolCallEvent("Tool ${toolCall.tool}")
                 }
-            )
 
-            edge(
-                nodeToolExecute forwardTo nodeSendToolResult
-            )
-
-            edge(
-                nodeSendToolResult forwardTo nodeFinish
-                        onAssistantMessage { ctx ->
-                    onAssistantMessage(ctx.content)
-                    true
+                if (latestTokenUsage() > 100500) {
+                    compressHistory()
                 }
-            )
+
+                val results = executeMultipleTools(tools)
+                responses = sendMultipleToolResults(results)
+            }
+
+            val assistantContent = responses.single().asAssistantMessage().content
+            onAssistantMessage(assistantContent)
         }
 
         // Create agent config with proper prompt
@@ -78,43 +71,20 @@ internal class CalculatorAgentProvider : AgentProvider {
             prompt = prompt(
                 "test",
                 params = LeapLLMParams(
-                    temperature = 0f
+                    temperature = .5f
                 )
             ) {
-                system(
-                    """
-                    You are a calculator.
-                    You will be provided a single math problem by the user.
-                    Use tools at your disposal to solve it.
-                    If you reference the result of a tool call in your answer, always explain it to the user in a clear sentence, e.g. 'The result is 4.'
-                    Never assume the user can see the raw tool result.
-                    """.trimIndent()
-                )
+                system(calculatorSystemPrompt)
             },
             model = LeapModels.Chat.LFM2_1_2B_Tool,
             maxAgentIterations = 10,
         )
 
-        // Return the agent
         return AIAgent(
             promptExecutor = leapExecutor,
             strategy = strategy,
             agentConfig = agentConfig,
             toolRegistry = toolRegistry,
-        ) {
-            handleEvents {
-                onToolCallStarting { ctx ->
-                    onToolCallEvent("Tool ${ctx.tool.name}, args ${ctx.toolArgs}")
-                }
-
-                onAgentExecutionFailed { ctx ->
-                    onErrorEvent("${ctx.throwable.message}")
-                }
-
-                onAgentCompleted { ctx ->
-                    // Skip finish event handling
-                }
-            }
-        }
+        )
     }
 }

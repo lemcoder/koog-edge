@@ -19,7 +19,9 @@ import java.io.File
 
 internal class LeapModelLoader(
     private val modelsPath: String,
-    private val options: ModelLoadingOptions = ModelLoadingOptions(),
+    private val options: ModelLoadingOptions = ModelLoadingOptions.build {
+        this.cpuThreads = 2
+    },
 ) : LocalModelLoader<ModelRunner?> {
     private val mutex = Mutex()
     private var loadingJob: Job? = null
