@@ -8,6 +8,9 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.LaunchedEffect
+import io.github.lemcoder.koog.edge.cactus.CactusModels
+import io.github.lemcoder.koog.edge.cactus.internal.CactusModelLoader
 import io.github.lemcoder.koogleapsdk.ui.screen.MainScreen
 
 class MainActivity : ComponentActivity() {
@@ -19,6 +22,13 @@ class MainActivity : ComponentActivity() {
                 colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()
             ) {
                 MainScreen()
+
+                LaunchedEffect(Unit) {
+                    CactusModelLoader().run {
+                        initialize(this@MainActivity)
+                        loadModel(CactusModels.Chat.Qwen3_0_6B)
+                    }
+                }
             }
         }
     }

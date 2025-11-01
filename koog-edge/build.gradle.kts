@@ -20,6 +20,10 @@ android {
         consumerProguardFiles("consumer-rules.pro")
     }
 
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -33,7 +37,9 @@ android {
 
 dependencies {
     implementation(libs.leap.sdk)
+    implementation(files("libs/cactus-beta-1.0.0.aar"))
     implementation(libs.koog.agents.core)
+    testImplementation(libs.kotlin.test)
 }
 
 publishing {
