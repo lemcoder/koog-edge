@@ -29,22 +29,22 @@ internal val cactusToKoogToolCallResponseConverter =
 internal val koogToCactusMessageConverter = Converter<Message, ChatMessage> { message ->
     when (message) {
         is Message.User -> ChatMessage(
-            role = "USER",
+            role = "user",
             content = message.content
         )
 
         is Message.Assistant -> ChatMessage(
-            role = "ASSISTANT",
+            role = "assistant",
             content = message.content
         )
 
         is Message.System -> ChatMessage(
-            role = "SYSTEM",
+            role = "system",
             content = message.content
         )
 
         is Message.Tool -> ChatMessage(
-            role = "TOOL",
+            role = "tool",
             content = message.content
         )
     }
