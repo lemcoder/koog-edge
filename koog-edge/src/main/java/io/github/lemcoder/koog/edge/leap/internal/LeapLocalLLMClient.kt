@@ -5,16 +5,15 @@ import ai.koog.prompt.dsl.ModerationResult
 import ai.koog.prompt.dsl.Prompt
 import ai.koog.prompt.executor.clients.LLMClient
 import ai.koog.prompt.llm.LLMCapability
-import ai.koog.prompt.llm.LLMProvider
 import ai.koog.prompt.llm.LLModel
 import ai.koog.prompt.message.Message
 import ai.koog.prompt.message.ResponseMetaInfo
 import ai.koog.prompt.streaming.StreamFrame
 import io.github.lemcoder.koog.edge.leap.getLeapLLModelById
-import io.github.lemcoder.koog.edge.leap.internal.util.koogToLeapParametersConverter
-import io.github.lemcoder.koog.edge.leap.internal.util.leapFunctionConverter
-import io.github.lemcoder.koog.edge.leap.internal.util.leapToKoogMessageConverter
-import io.github.lemcoder.koog.edge.leap.internal.util.messageResponseToStreamFrameMapper
+import io.github.lemcoder.koog.edge.leap.internal.converter.koogToLeapParametersConverter
+import io.github.lemcoder.koog.edge.leap.internal.converter.leapFunctionConverter
+import io.github.lemcoder.koog.edge.leap.internal.converter.koogToLeapMessageConverter
+import io.github.lemcoder.koog.edge.leap.internal.converter.messageResponseToStreamFrameConverter
 import io.github.lemcoder.koog.edge.log.AndroidLogger
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -48,7 +47,7 @@ internal open class LeapLocalLLMClient(
 
         // Add message history
         for (i in 0 until prompt.messages.size - 1) {
-            val message = leapToKoogMessageConverter.convert(prompt.messages[i])
+            val message = koogToLeapMessageConverter.convert(prompt.messages[i])
             conversation.appendToHistory(message)
         }
 
@@ -57,7 +56,7 @@ internal open class LeapLocalLLMClient(
             conversation.registerFunction(function)
         }
 
-        val latestMessage = leapToKoogMessageConverter.convert(prompt.messages.last())
+        val latestMessage = koogToLeapMessageConverter.convert(prompt.messages.last())
 
         val responseText = StringBuilder()
         val toolCalls = mutableListOf<Message.Tool.Call>()
@@ -70,7 +69,7 @@ internal open class LeapLocalLLMClient(
             ).catch {
                 AndroidLogger.error("Error during response generation", it)
             }.collect { messageResponse ->
-                val frames = messageResponseToStreamFrameMapper.convert(messageResponse)
+                val frames = messageResponseToStreamFrameConverter.convert(messageResponse)
                 frames.forEach { frame ->
                     AndroidLogger.w("Received frame: $frame")
                     when (frame) {
@@ -125,9 +124,9 @@ internal open class LeapLocalLLMClient(
         val conversation = modelRunner.createConversation()
 
         val latestMessage =
-            leapToKoogMessageConverter.convert(prompt.messages[prompt.messages.lastIndex])
+            koogToLeapMessageConverter.convert(prompt.messages[prompt.messages.lastIndex])
         for (i in 0 until prompt.messages.size - 1) {
-            val message = leapToKoogMessageConverter.convert(prompt.messages[i])
+            val message = koogToLeapMessageConverter.convert(prompt.messages[i])
             conversation.appendToHistory(message)
         }
 
@@ -141,7 +140,7 @@ internal open class LeapLocalLLMClient(
             latestMessage,
             koogToLeapParametersConverter.convert(prompt.params)
         ).collect { messageResponse ->
-            val frames = messageResponseToStreamFrameMapper.convert(messageResponse)
+            val frames = messageResponseToStreamFrameConverter.convert(messageResponse)
             frames.forEach { frame -> emit(frame) }
         }
     }

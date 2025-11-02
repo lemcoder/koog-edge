@@ -1,4 +1,4 @@
-package io.github.lemcoder.koog.edge.leap.internal.util
+package io.github.lemcoder.koog.edge.leap.internal.converter
 
 import ai.koog.prompt.message.Message
 import ai.koog.prompt.streaming.StreamFrame
@@ -6,6 +6,7 @@ import ai.koog.prompt.streaming.StreamFrame.*
 import ai.liquid.leap.message.ChatMessage
 import ai.liquid.leap.message.ChatMessageContent
 import ai.liquid.leap.message.MessageResponse
+import io.github.lemcoder.koog.edge.util.Converter
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -15,7 +16,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlin.collections.iterator
 
-internal val leapToKoogMessageConverter = Converter<Message, ChatMessage> { message ->
+internal val koogToLeapMessageConverter = Converter<Message, ChatMessage> { message ->
     when (message) {
         is Message.User -> ChatMessage(
             role = ChatMessage.Role.USER,
@@ -39,7 +40,7 @@ internal val leapToKoogMessageConverter = Converter<Message, ChatMessage> { mess
     }
 }
 
-internal val messageResponseToStreamFrameMapper =
+internal val messageResponseToStreamFrameConverter =
     Converter<MessageResponse, List<StreamFrame>> { response ->
         when (response) {
             is MessageResponse.Chunk -> listOf(

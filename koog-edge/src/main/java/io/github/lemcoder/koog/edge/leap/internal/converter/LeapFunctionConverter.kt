@@ -1,9 +1,10 @@
-package io.github.lemcoder.koog.edge.leap.internal.util
+package io.github.lemcoder.koog.edge.leap.internal.converter
 
 import ai.koog.agents.core.tools.ToolDescriptor
 import ai.koog.agents.core.tools.ToolParameterDescriptor
 import ai.liquid.leap.function.LeapFunction
 import ai.liquid.leap.function.LeapFunctionParameter
+import io.github.lemcoder.koog.edge.util.Converter
 
 internal val leapFunctionConverter = Converter<ToolDescriptor, LeapFunction> { tool ->
     LeapFunction(

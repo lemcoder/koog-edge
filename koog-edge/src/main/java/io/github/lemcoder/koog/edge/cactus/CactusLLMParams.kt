@@ -18,12 +18,11 @@ import com.cactus.InferenceMode
  */
 class CactusLLMParams(
     temperature: Double,
-    topK: Int,
-    topP: Float,
     maxTokens: Int,
-    stopSequences: List<String> = emptyList(),
-    cactusToken: String? = null,
-    val contextSize: Int? = null,
+    val topK: Int,
+    val topP: Double,
+    val stopSequences: List<String> = emptyList(),
+    val cactusToken: String? = null,
 ) : LLMParams(
     temperature = temperature,
     maxTokens = maxTokens,
