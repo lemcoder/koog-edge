@@ -17,15 +17,14 @@ import com.cactus.InferenceMode
  * )
  */
 class CactusLLMParams(
-    temperature: Double,
-    maxTokens: Int,
-    val topK: Int,
-    val topP: Double,
+    temperature: Double? = null,
+    maxTokens: Int? = null,
+    val topK: Int? = null,
+    val topP: Double? = null,
     val stopSequences: List<String> = emptyList(),
     val cactusToken: String? = null,
+    val inferenceMode: InferenceMode = InferenceMode.LOCAL
 ) : LLMParams(
     temperature = temperature,
     maxTokens = maxTokens,
-) {
-    val inferenceMode: InferenceMode = InferenceMode.LOCAL
-}
+)

@@ -9,12 +9,13 @@ import ai.koog.prompt.llm.LLModel
 import ai.koog.prompt.message.Message
 import ai.koog.prompt.message.ResponseMetaInfo
 import com.cactus.CactusCompletionParams
+import com.cactus.InferenceMode
 import io.github.lemcoder.koog.edge.cactus.CactusLLMParams
 import io.github.lemcoder.koog.edge.cactus.getCactusLLMModelById
 import io.github.lemcoder.koog.edge.cactus.internal.converter.cactusToKoogToolCallResponseConverter
 import io.github.lemcoder.koog.edge.cactus.internal.converter.koogToCactusMessageConverter
 import io.github.lemcoder.koog.edge.cactus.internal.converter.koogToCactusToolConverter
-import io.github.lemcoder.koog.edge.log.AndroidLogger
+import io.github.lemcoder.koog.edge.log.AndroidEdgeLogger
 import kotlinx.datetime.Clock
 
 class CactusLocalLLMClient(
@@ -25,7 +26,7 @@ class CactusLocalLLMClient(
         model: LLModel,
         tools: List<ToolDescriptor>
     ): List<Message.Response> {
-        AndroidLogger.w { "Executing prompt: $prompt with tools: $tools and model: $model" }
+        AndroidEdgeLogger.w { "Executing prompt: $prompt with tools: $tools and model: $model" }
         require(model.capabilities.contains(LLMCapability.Completion)) {
             "Model ${model.id} does not support chat completions"
         }
@@ -44,21 +45,24 @@ class CactusLocalLLMClient(
 
         val cactusTools = tools.map(koogToCactusToolConverter::convert).also {
             it.forEach { tool ->
-                AndroidLogger.w("Registering: $tool")
+                AndroidEdgeLogger.w("Registering: $tool")
             }
         }
+
+        val defaultParams = CactusCompletionParams()
 
         val cactusResult = modelRunner.generateCompletion(
             messages = history,
             params = CactusCompletionParams(
                 model = model.id,
-                temperature = params?.temperature,
-                topK = params?.topK,
-                topP = params?.topP,
-                maxTokens = params?.maxTokens ?: 1024, // TODO check default max tokens by model
-                stopSequences = params?.stopSequences ?: emptyList(),
-                cactusToken = params?.cactusToken,
-                tools = cactusTools
+                temperature = params?.temperature ?: defaultParams.temperature,
+                topK = params?.topK ?: defaultParams.topK,
+                topP = params?.topP ?: defaultParams.topP,
+                maxTokens = params?.maxTokens ?: defaultParams.maxTokens,
+                stopSequences = params?.stopSequences ?: defaultParams.stopSequences,
+                cactusToken = params?.cactusToken ?: defaultParams.cactusToken,
+                tools = cactusTools,
+                mode = params?.inferenceMode ?: InferenceMode.LOCAL_FIRST
             ),
             onToken = { token, tokenId ->
                 // Used in streaming only
@@ -71,10 +75,10 @@ class CactusLocalLLMClient(
 
         if (responseText.isEmpty()) {
             if (toolCalls.isNotEmpty()) {
-                AndroidLogger.w("Model returned only tool calls, no assistant response.")
+                AndroidEdgeLogger.w("Model returned only tool calls, no assistant response.")
                 return toolCalls
             }
-            AndroidLogger.error("Model returned empty response. Frames: $toolCalls")
+            AndroidEdgeLogger.error("Model returned empty response. Frames: $toolCalls")
             throw IllegalStateException("Model returned empty response. Check input prompt and model configuration.")
         }
 

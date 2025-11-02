@@ -1,20 +1,23 @@
 package io.github.lemcoder.koogleapsdk.agents.weather
 
 import ai.koog.agents.core.agent.AIAgent
+import ai.koog.agents.core.agent.asAssistantMessage
+import ai.koog.agents.core.agent.compressHistory
 import ai.koog.agents.core.agent.config.AIAgentConfig
-import ai.koog.agents.core.dsl.builder.forwardTo
-import ai.koog.agents.core.dsl.builder.strategy
-import ai.koog.agents.core.dsl.extension.nodeExecuteMultipleTools
-import ai.koog.agents.core.dsl.extension.nodeLLMRequestMultiple
-import ai.koog.agents.core.dsl.extension.nodeLLMSendMultipleToolResults
-import ai.koog.agents.core.dsl.extension.onAssistantMessage
-import ai.koog.agents.core.dsl.extension.onMultipleToolCalls
+import ai.koog.agents.core.agent.containsToolCalls
+import ai.koog.agents.core.agent.executeMultipleTools
+import ai.koog.agents.core.agent.extractToolCalls
+import ai.koog.agents.core.agent.functionalStrategy
+import ai.koog.agents.core.agent.latestTokenUsage
+import ai.koog.agents.core.agent.requestLLMMultiple
+import ai.koog.agents.core.agent.sendMultipleToolResults
 import ai.koog.agents.core.tools.ToolRegistry
-import ai.koog.agents.features.eventHandler.feature.handleEvents
 import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.executor.llms.SingleLLMPromptExecutor
-import io.github.lemcoder.koog.edge.leap.LeapModels
+import io.github.lemcoder.koog.edge.cactus.CactusModels
+import io.github.lemcoder.koog.edge.cactus.getCactusLLMClient
 import io.github.lemcoder.koog.edge.leap.getLeapLLMClient
+import io.github.lemcoder.koogleapsdk.App
 import io.github.lemcoder.koogleapsdk.agents.common.AgentProvider
 import io.github.lemcoder.koogleapsdk.agents.common.ExitTool
 import io.github.lemcoder.koogleapsdk.agents.common.modelsPath
@@ -34,50 +37,37 @@ internal class WeatherAgentProvider : AgentProvider {
         onAssistantMessage: suspend (String) -> String,
     ): AIAgent<String, String> {
         val leapExecutor = SingleLLMPromptExecutor(getLeapLLMClient(modelsPath))
+        val cactusExecutor = SingleLLMPromptExecutor(getCactusLLMClient(App.context))
 
         // Create tool registry with weather tools
         val toolRegistry = ToolRegistry {
             tool(WeatherTools.CurrentDatetimeTool)
             tool(WeatherTools.AddDatetimeTool)
             tool(WeatherTools.WeatherForecastTool)
-
             tool(ExitTool)
         }
 
         @Suppress("DuplicatedCode")
-        val strategy = strategy(title) {
-            val nodeRequestLLM by nodeLLMRequestMultiple()
-            val nodeAssistantMessage by node<String, String> { message -> onAssistantMessage(message) }
-            val nodeExecuteToolMultiple by nodeExecuteMultipleTools(parallelTools = true)
-            val nodeSendToolResultMultiple by nodeLLMSendMultipleToolResults()
+        val strategy = functionalStrategy<String, String>(title) { input ->
+            var responses = requestLLMMultiple(input)
 
-            edge(nodeStart forwardTo nodeRequestLLM)
+            while (responses.containsToolCalls()) {
+                val tools = extractToolCalls(responses)
 
-            edge(
-                nodeRequestLLM forwardTo nodeExecuteToolMultiple
-                        onMultipleToolCalls { true }
-            )
+                tools.forEach { toolCall ->
+                    onToolCallEvent("Tool ${toolCall.tool}")
+                }
 
-            edge(
-                nodeRequestLLM forwardTo nodeAssistantMessage
-                        transformed { it.first() }
-                        onAssistantMessage { true }
-            )
+                if (latestTokenUsage() > 100500) {
+                    compressHistory()
+                }
 
-            edge(
-                nodeExecuteToolMultiple forwardTo nodeSendToolResultMultiple
-            )
+                val results = executeMultipleTools(tools)
+                responses = sendMultipleToolResults(results)
+            }
 
-            edge(
-                nodeSendToolResultMultiple forwardTo nodeAssistantMessage
-                        transformed { it.first() }
-                        onAssistantMessage { true }
-            )
-
-            edge(
-                nodeAssistantMessage forwardTo nodeFinish
-                        transformed { it }
-            )
+            val assistantContent = responses.single().asAssistantMessage().content
+            onAssistantMessage(assistantContent)
         }
 
         // Create agent config with proper prompt
@@ -99,30 +89,16 @@ internal class WeatherAgentProvider : AgentProvider {
                     """.trimIndent()
                 )
             },
-            model = LeapModels.Chat.LFM2_1_2B_Tool,
+            model = CactusModels.Chat.Qwen3_0_6B,
             maxAgentIterations = 50
         )
 
         // Return the agent
         return AIAgent(
-            promptExecutor = leapExecutor,
+            promptExecutor = cactusExecutor,
             strategy = strategy,
             agentConfig = agentConfig,
             toolRegistry = toolRegistry,
-        ) {
-            handleEvents {
-                onToolCallStarting { ctx ->
-                    onToolCallEvent("Tool ${ctx.tool.name}, args ${ctx.toolArgs}")
-                }
-
-                onAgentExecutionFailed { ctx ->
-                    onErrorEvent("${ctx.throwable.message}")
-                }
-
-                onAgentCompleted { ctx ->
-                    // Skip finish event handling
-                }
-            }
-        }
+        )
     }
 }

@@ -14,6 +14,7 @@ import ai.koog.agents.core.agent.sendMultipleToolResults
 import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.executor.llms.SingleLLMPromptExecutor
+import io.github.lemcoder.koog.edge.cactus.CactusLLMParams
 import io.github.lemcoder.koog.edge.cactus.CactusModels
 import io.github.lemcoder.koog.edge.cactus.getCactusLLMClient
 import io.github.lemcoder.koog.edge.leap.LeapLLMParams
@@ -66,7 +67,7 @@ internal class CalculatorAgentProvider : AgentProvider {
                 responses = sendMultipleToolResults(results)
             }
 
-            val assistantContent = responses.single().asAssistantMessage().content
+            val assistantContent = responses.first().asAssistantMessage().content
             onAssistantMessage(assistantContent)
         }
 
@@ -74,9 +75,7 @@ internal class CalculatorAgentProvider : AgentProvider {
         val agentConfig = AIAgentConfig(
             prompt = prompt(
                 "test",
-                params = LeapLLMParams(
-                    temperature = .5f
-                )
+                params = CactusLLMParams()
             ) {
                 system(calculatorSystemPrompt)
             },

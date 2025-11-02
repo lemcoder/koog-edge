@@ -11,7 +11,7 @@ object CalculatorTools {
     ) : Tool<CalculatorTool.Args, CalculatorTool.Result>() {
         @Serializable
         data class Args(
-            @property:LLMDescription("First number")// "Second number"
+            @property:LLMDescription("First number")
             val a: Float,
             @property:LLMDescription("Second number")
             val b: Float
@@ -30,7 +30,7 @@ object CalculatorTools {
 
     object PlusTool : CalculatorTool(
         name = "plus",
-        description = "Adds a and b",
+        description = "Addition",
     ) {
         override suspend fun execute(args: Args): Result {
             return Result(args.a + args.b)
