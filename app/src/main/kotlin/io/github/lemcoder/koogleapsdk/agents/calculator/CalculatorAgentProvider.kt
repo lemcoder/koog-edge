@@ -14,9 +14,12 @@ import ai.koog.agents.core.agent.sendMultipleToolResults
 import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.executor.llms.SingleLLMPromptExecutor
+import io.github.lemcoder.koog.edge.cactus.CactusModels
+import io.github.lemcoder.koog.edge.cactus.getCactusLLMClient
 import io.github.lemcoder.koog.edge.leap.LeapLLMParams
 import io.github.lemcoder.koog.edge.leap.LeapModels
 import io.github.lemcoder.koog.edge.leap.getLeapLLMClient
+import io.github.lemcoder.koogleapsdk.App
 import io.github.lemcoder.koogleapsdk.agents.common.AgentProvider
 import io.github.lemcoder.koogleapsdk.agents.common.ExitTool
 import io.github.lemcoder.koogleapsdk.agents.common.modelsPath
@@ -34,6 +37,7 @@ internal class CalculatorAgentProvider : AgentProvider {
         onAssistantMessage: suspend (String) -> String,
     ): AIAgent<String, String> {
         val leapExecutor = SingleLLMPromptExecutor(getLeapLLMClient(modelsPath))
+        val cactusExecutor = SingleLLMPromptExecutor(getCactusLLMClient(App.context))
 
         val toolRegistry = ToolRegistry {
             tool(CalculatorTools.DivideTool)
@@ -76,12 +80,12 @@ internal class CalculatorAgentProvider : AgentProvider {
             ) {
                 system(calculatorSystemPrompt)
             },
-            model = LeapModels.Chat.LFM2_1_2B_Tool,
+            model = CactusModels.Chat.Qwen3_0_6B,
             maxAgentIterations = 10,
         )
 
         return AIAgent(
-            promptExecutor = leapExecutor,
+            promptExecutor = cactusExecutor,
             strategy = strategy,
             agentConfig = agentConfig,
             toolRegistry = toolRegistry,

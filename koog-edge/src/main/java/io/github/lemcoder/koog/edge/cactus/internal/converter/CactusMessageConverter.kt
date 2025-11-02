@@ -6,15 +6,22 @@ import com.cactus.ChatMessage
 import com.cactus.ToolCall
 import io.github.lemcoder.koog.edge.util.Converter
 import kotlinx.datetime.Clock
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 internal val cactusToKoogToolCallResponseConverter =
     Converter<ToolCall, Message.Response> { toolCall ->
         Message.Tool.Call(
             id = null,
             tool = toolCall.name,
-            content = toolCall.arguments
-                .map { "${it.key}: ${it.value}" }
-                .joinToString(", "),
+            content = Json.encodeToString(
+                buildJsonObject {
+                    toolCall.arguments.forEach { (k, v) ->
+                        put(k, v)
+                    }
+                }
+            ),
             metaInfo = ResponseMetaInfo(timestamp = Clock.System.now())
         )
     }

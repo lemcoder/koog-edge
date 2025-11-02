@@ -8,9 +8,20 @@ import com.cactus.CactusLM
 import io.github.lemcoder.koog.edge.LocalModelLoader
 
 
-class CactusModelLoader : LocalModelLoader<CactusLM?> {
+object CactusModelLoader : LocalModelLoader<CactusLM?> {
+    private var isInitialized = false
+
+    fun initializeIfNecessary(context: Context) {
+        if (isInitialized) return
+        isInitialized = true
+        CactusContextInitializer.initialize(context)
+    }
+
     override suspend fun loadModel(model: LLModel): CactusLM? {
-        val lm = CactusLM()
+        val lm = CactusLM(
+            enableToolFiltering = false
+        )
+        if (lm.isLoaded()) return lm
         lm.initializeModel(
             CactusInitParams(
                 model = model.id
@@ -18,9 +29,5 @@ class CactusModelLoader : LocalModelLoader<CactusLM?> {
         )
 
         return lm.takeIf { it.isLoaded() }
-    }
-
-    fun initialize(context: Context) {
-        CactusContextInitializer.initialize(context)
     }
 }

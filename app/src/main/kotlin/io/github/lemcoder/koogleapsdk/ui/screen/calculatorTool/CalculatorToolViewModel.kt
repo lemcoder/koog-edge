@@ -30,7 +30,7 @@ class CalculatorToolViewModel : MviViewModel<CalculatorToolState, CalculatorTool
                     isCalculating = true
                 )
             }
-            val prompt = "What is the result of: $expression"
+            val prompt = expression
             try {
                 val agent = CalculatorAgentProvider().provideAgent(
                     onToolCallEvent = {
