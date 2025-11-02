@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.lemcoder.koogleapsdk"
+    namespace = "io.github.lemcoder.koogedge"
     compileSdk = libs.versions.compileSdk.get().toInt()
 
     kotlin {
