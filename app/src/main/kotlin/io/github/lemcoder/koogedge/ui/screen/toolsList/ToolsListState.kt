@@ -11,6 +11,8 @@ data class ToolsListState(
         companion object {
             const val TOOL_ID_CALCULATOR = "calculator"
             const val TOOL_ID_WEATHER = "weather"
+
+            const val TOOL_ID_CHAT = "chat"
         }
     }
 }

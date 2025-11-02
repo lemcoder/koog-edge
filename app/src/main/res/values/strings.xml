@@ -11,4 +11,7 @@
     <string name="enter_expression">Enter expression</string>
     <string name="calculator_tool">Calculator Tool</string>
     <string name="weather_tool">Weather Tool</string>
+    <string name="chat">Chat</string>
+    <string name="chat_with_ai_assistant">Chat with AI assistant</string>
+    <string name="enter_message">Type something...</string>
 </resources>

@@ -15,6 +15,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.lemcoder.koogedge.ui.navigation.Destination
 import io.github.lemcoder.koogedge.ui.navigation.NavigationService
 import io.github.lemcoder.koogedge.ui.screen.calculatorTool.CalculatorToolRoute
+import io.github.lemcoder.koogedge.ui.screen.chat.ChatRoute
 import io.github.lemcoder.koogedge.ui.screen.toolsList.ToolsListRoute
 import io.github.lemcoder.koogedge.ui.screen.weatherTool.WeatherToolRoute
 import io.github.lemcoder.koogedge.ui.util.SnackbarUtil
@@ -41,6 +42,7 @@ fun MainScreen() {
                 Destination.CalculatorTool -> CalculatorToolRoute()
                 Destination.ToolsList -> ToolsListRoute()
                 Destination.WeatherTool -> WeatherToolRoute()
+                Destination.Chat -> ChatRoute()
             }
         }
     }

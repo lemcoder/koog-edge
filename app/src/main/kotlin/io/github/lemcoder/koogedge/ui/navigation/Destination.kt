@@ -6,4 +6,6 @@ sealed interface Destination {
     data object WeatherTool : Destination
 
     data object ToolsList : Destination
+
+    data object Chat: Destination
 }
