@@ -41,6 +41,7 @@ internal class ChatAgentProvider : AgentProvider {
                 "test",
                 params = CactusLLMParams()
             ) {
+                system("/nothink")
                 system("You are a helpful assistant.")
             },
             model = CactusModels.Chat.Qwen3_0_6B,

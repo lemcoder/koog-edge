@@ -14,7 +14,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "io.github.lemcoder.koog_leap_sdk"
+        applicationId = "io.github.lemcoder.koog_edge"
         minSdk = libs.versions.minSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
