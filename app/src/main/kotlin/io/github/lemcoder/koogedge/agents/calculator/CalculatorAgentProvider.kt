@@ -2,25 +2,22 @@ package io.github.lemcoder.koogedge.agents.calculator
 
 import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.agent.asAssistantMessage
-import ai.koog.agents.core.agent.compressHistory
 import ai.koog.agents.core.agent.config.AIAgentConfig
-import ai.koog.agents.core.agent.containsToolCalls
-import ai.koog.agents.core.agent.executeMultipleTools
-import ai.koog.agents.core.agent.extractToolCalls
+import ai.koog.agents.core.agent.executeTool
 import ai.koog.agents.core.agent.functionalStrategy
-import ai.koog.agents.core.agent.latestTokenUsage
-import ai.koog.agents.core.agent.requestLLMMultiple
-import ai.koog.agents.core.agent.sendMultipleToolResults
+import ai.koog.agents.core.agent.requestLLM
+import ai.koog.agents.core.agent.sendToolResult
 import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.executor.llms.SingleLLMPromptExecutor
+import ai.koog.prompt.message.Message
+import ai.koog.prompt.message.RequestMetaInfo
 import io.github.lemcoder.koog.edge.cactus.CactusLLMParams
 import io.github.lemcoder.koog.edge.cactus.CactusModels
 import io.github.lemcoder.koog.edge.cactus.getCactusLLMClient
 import io.github.lemcoder.koog.edge.leap.getLeapLLMClient
 import io.github.lemcoder.koogedge.App
 import io.github.lemcoder.koogedge.agents.common.AgentProvider
-import io.github.lemcoder.koogedge.agents.common.ExitTool
 import io.github.lemcoder.koogedge.agents.common.modelsPath
 
 /**
@@ -43,29 +40,24 @@ internal class CalculatorAgentProvider : AgentProvider {
             tool(CalculatorTools.PlusTool)
             tool(CalculatorTools.MinusTool)
             tool(CalculatorTools.MultiplyTool)
-            tool(ExitTool)
         }
 
         @Suppress("DuplicatedCode")
         val strategy = functionalStrategy<String, String>(title) { input ->
-            var responses = requestLLMMultiple(input)
+            var response = requestLLM(input)
 
-            while (responses.containsToolCalls()) {
-                val tools = extractToolCalls(responses)
-
-                tools.forEach { toolCall ->
-                    onToolCallEvent("Tool ${toolCall.tool}")
+            while (response is Message.Tool.Call) {
+                onToolCallEvent("Tool ${response.tool}")
+                val result = executeTool(response)
+                llm.withPrompt {
+                    this.withMessages { messages ->
+                        messages + Message.User(content = "Give me the answer based on tool result", metaInfo = RequestMetaInfo.Empty)
+                    }
                 }
-
-                if (latestTokenUsage() > 100500) {
-                    compressHistory()
-                }
-
-                val results = executeMultipleTools(tools)
-                responses = sendMultipleToolResults(results)
+                response = sendToolResult(result)
             }
 
-            val assistantContent = responses.first().asAssistantMessage().content
+            val assistantContent = response.asAssistantMessage().content
             onAssistantMessage(assistantContent)
         }
 
@@ -73,7 +65,9 @@ internal class CalculatorAgentProvider : AgentProvider {
         val agentConfig = AIAgentConfig(
             prompt = prompt(
                 "test",
-                params = CactusLLMParams()
+                params = CactusLLMParams(
+                    maxTokens = 512
+                )
             ) {
                 system(calculatorSystemPrompt)
             },

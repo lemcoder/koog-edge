@@ -9,11 +9,14 @@ import kotlinx.datetime.Clock
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 internal val cactusToKoogToolCallResponseConverter =
     Converter<ToolCall, Message.Response> { toolCall ->
         Message.Tool.Call(
-            id = null,
+            id = Uuid.random().toString(),
             tool = toolCall.name,
             content = Json.encodeToString(
                 buildJsonObject {
@@ -22,7 +25,7 @@ internal val cactusToKoogToolCallResponseConverter =
                     }
                 }
             ),
-            metaInfo = ResponseMetaInfo(timestamp = Clock.System.now())
+            metaInfo = ResponseMetaInfo.create(Clock.System)
         )
     }
 

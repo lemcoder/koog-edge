@@ -9,7 +9,10 @@ import ai.koog.prompt.llm.LLModel
 import ai.koog.prompt.message.Message
 import ai.koog.prompt.message.ResponseMetaInfo
 import com.cactus.CactusCompletionParams
+import com.cactus.CactusCompletionResult
+import com.cactus.CactusLM
 import com.cactus.InferenceMode
+import com.cactus.models.CactusTool
 import io.github.lemcoder.koog.edge.cactus.CactusLLMParams
 import io.github.lemcoder.koog.edge.cactus.getCactusLLMModelById
 import io.github.lemcoder.koog.edge.cactus.internal.converter.cactusToKoogToolCallResponseConverter
@@ -49,9 +52,64 @@ class CactusLocalLLMClient(
             }
         }
 
-        val defaultParams = CactusCompletionParams()
+        var cactusResult = runCactusInference(
+            model,
+            modelRunner,
+            history,
+            params,
+            cactusTools
+        )
+        while (cactusResult == null || !cactusResult.success) {
+            AndroidEdgeLogger.w("Cactus inference failed, retrying")
+            cactusResult = runCactusInference(
+                model,
+                modelRunner,
+                history,
+                params,
+                cactusTools
+            )
+        }
 
-        val cactusResult = modelRunner.generateCompletion(
+
+        val toolCalls = cactusResult.toolCalls?.map(cactusToKoogToolCallResponseConverter::convert)
+            ?: emptyList()
+        val responseText = cactusResult.response ?: ""
+
+        if (responseText.isEmpty()) {
+            if (toolCalls.isNotEmpty()) {
+                AndroidEdgeLogger.w("Model returned only tool calls, no assistant response.")
+                AndroidEdgeLogger.w("tools called at ${Clock.System.now()}: $toolCalls")
+                return toolCalls
+            }
+            AndroidEdgeLogger.error("Model returned empty response. Frames: $toolCalls")
+            throw IllegalStateException("Model returned empty response. Check input prompt and model configuration.")
+        }
+
+        val result = Message.Assistant(
+            content = responseText,
+            metaInfo = ResponseMetaInfo.Empty,
+            attachments = listOf(),
+        )
+
+        return listOf(result) + toolCalls
+    }
+
+    override suspend fun moderate(
+        prompt: Prompt,
+        model: LLModel
+    ): ModerationResult {
+        TODO("Not yet implemented")
+    }
+
+    private suspend fun runCactusInference(
+        model: LLModel,
+        modelRunner: CactusLM,
+        history: List<com.cactus.ChatMessage>,
+        params: CactusLLMParams?,
+        cactusTools: List<CactusTool>
+    ): CactusCompletionResult? {
+        val defaultParams = CactusCompletionParams()
+        return modelRunner.generateCompletion(
             messages = history,
             params = CactusCompletionParams(
                 model = model.id,
@@ -67,34 +125,6 @@ class CactusLocalLLMClient(
             onToken = { token, tokenId ->
                 // Used in streaming only
             }
-        ) ?: error("Model ${model.id} returned no response")
-
-        val toolCalls = cactusResult.toolCalls?.map(cactusToKoogToolCallResponseConverter::convert)
-            ?: emptyList()
-        val responseText = cactusResult.response ?: ""
-
-        if (responseText.isEmpty()) {
-            if (toolCalls.isNotEmpty()) {
-                AndroidEdgeLogger.w("Model returned only tool calls, no assistant response.")
-                return toolCalls
-            }
-            AndroidEdgeLogger.error("Model returned empty response. Frames: $toolCalls")
-            throw IllegalStateException("Model returned empty response. Check input prompt and model configuration.")
-        }
-
-        val result = Message.Assistant(
-            content = responseText,
-            metaInfo = ResponseMetaInfo(timestamp = Clock.System.now()),
-            attachments = listOf(),
         )
-
-        return listOf(result) + toolCalls
-    }
-
-    override suspend fun moderate(
-        prompt: Prompt,
-        model: LLModel
-    ): ModerationResult {
-        TODO("Not yet implemented")
     }
 }

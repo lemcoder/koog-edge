@@ -58,7 +58,8 @@ class ChatViewModel : MviViewModel<ChatState, ChatEvent>() {
             }
         )
 
-        val result = agent.run(message)
+        val noThinkToken = "/no_think"
+        val result = agent.run(noThinkToken + message)
         val newMessage = ChatState.Message(
             id = Uuid.random().toString(),
             content = result,

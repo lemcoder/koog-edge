@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "koog-leap-sdk"
+rootProject.name = "koog-edge"
 include(":app")
 include(":koog-edge")
