@@ -9,7 +9,7 @@ sealed interface LeapModels : AndroidLocalModel {
     data object Chat : AndroidLocalModel {
         val LFM2_1_2B_Tool = LLModel(
             provider = AndroidLocalLLMProvider,
-            id = "lfm2-1.2b-tool",
+            id = "lfm2-1.2b-tool-20250912-8da4w",
             capabilities = listOf(
                 LLMCapability.Tools,
                 LLMCapability.Completion,
