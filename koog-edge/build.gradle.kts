@@ -14,7 +14,7 @@ kotlin {
     jvmToolchain(17)
 
     androidTarget {
-        publishLibraryVariants("release", "debug")
+        publishLibraryVariants("release")
     }
 
     iosArm64()
