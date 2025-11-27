@@ -5,6 +5,7 @@ import ai.koog.prompt.dsl.ModerationResult
 import ai.koog.prompt.dsl.Prompt
 import ai.koog.prompt.executor.clients.LLMClient
 import ai.koog.prompt.llm.LLMCapability
+import ai.koog.prompt.llm.LLMProvider
 import ai.koog.prompt.llm.LLModel
 import ai.koog.prompt.message.Message
 import ai.koog.prompt.message.ResponseMetaInfo
@@ -20,6 +21,7 @@ import io.github.lemcoder.koog.edge.cactus.internal.converter.cactusToKoogToolCa
 import io.github.lemcoder.koog.edge.cactus.internal.converter.koogToCactusMessageConverter
 import io.github.lemcoder.koog.edge.cactus.internal.converter.koogToCactusToolConverter
 import io.github.lemcoder.koog.edge.log.KoogEdgeLog
+import io.github.lemcoder.koog.edge.provider.LocalLLMProvider
 import kotlinx.datetime.Clock
 
 class CactusLocalLLMClient(
@@ -89,7 +91,6 @@ class CactusLocalLLMClient(
         val result = Message.Assistant(
             content = responseText,
             metaInfo = ResponseMetaInfo.Empty,
-            attachments = listOf(),
         )
 
         return listOf(result) + toolCalls
@@ -101,6 +102,8 @@ class CactusLocalLLMClient(
     ): ModerationResult {
         TODO("Not yet implemented")
     }
+
+    override fun llmProvider(): LLMProvider = LocalLLMProvider
 
     private suspend fun runCactusInference(
         model: LLModel,
@@ -127,5 +130,9 @@ class CactusLocalLLMClient(
                 // Used in streaming only
             }
         )
+    }
+
+    override fun close() {
+        KoogEdgeLog.w { "CactusLocalLLMClient closed." }
     }
 }

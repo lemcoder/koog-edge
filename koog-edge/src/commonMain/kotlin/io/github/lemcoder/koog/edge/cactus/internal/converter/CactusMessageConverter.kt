@@ -50,5 +50,10 @@ internal val koogToCactusMessageConverter = Converter<Message, ChatMessage> { me
             role = "tool",
             content = message.content
         )
+
+        is Message.Reasoning -> ChatMessage(
+            role = "assistant",
+            content = message.content
+        )
     }
 }

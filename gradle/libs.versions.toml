@@ -5,19 +5,25 @@ minSdk = "31"
 agp = "8.13.1"
 kotlin = "2.2.21"
 coreKtx = "1.17.0"
-lifecycleRuntimeKtx = "2.9.4"
-activityCompose = "1.11.0"
-composeBom = "2025.10.01"
-material = "1.13.0"
+lifecycleRuntimeKtx = "2.10.0"
+activityCompose = "1.12.0"
+composeBom = "2025.11.01"
 
-koog = "0.5.0"
-leap = "0.7.0"
+koog = "0.5.3"
+leap = "0.7.0" # TODO Update to latest version and migrate
 cactus = "1.0.2-beta"
 
 kotlinx-serialization = "1.9.0"
 
 
 [libraries]
+# SDK Dependencies
+cactus = { module = "com.cactuscompute:cactus", version.ref = "cactus" }
+koog-agents-core = { module = "ai.koog:agents-core", version.ref = "koog" }
+leap-sdk = { module = "ai.liquid.leap:leap-sdk", version.ref = "leap" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+
+# Example app dependencies
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
@@ -28,14 +34,10 @@ androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
-cactus = { module = "com.cactuscompute:cactus", version.ref = "cactus" }
 koog-agents = { module = "ai.koog:koog-agents", version.ref = "koog" }
-koog-agents-core = { module = "ai.koog:agents-core", version.ref = "koog" }
-leap-sdk = { module = "ai.liquid.leap:leap-sdk", version.ref = "leap" }
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
-kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

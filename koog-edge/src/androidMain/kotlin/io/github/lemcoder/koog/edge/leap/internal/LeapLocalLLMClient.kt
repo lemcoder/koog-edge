@@ -5,6 +5,7 @@ import ai.koog.prompt.dsl.ModerationResult
 import ai.koog.prompt.dsl.Prompt
 import ai.koog.prompt.executor.clients.LLMClient
 import ai.koog.prompt.llm.LLMCapability
+import ai.koog.prompt.llm.LLMProvider
 import ai.koog.prompt.llm.LLModel
 import ai.koog.prompt.message.Message
 import ai.koog.prompt.message.ResponseMetaInfo
@@ -16,6 +17,7 @@ import io.github.lemcoder.koog.edge.leap.internal.converter.koogToLeapMessageCon
 import io.github.lemcoder.koog.edge.leap.internal.converter.messageResponseToStreamFrameConverter
 import io.github.lemcoder.koog.edge.log.AndroidEdgeLogger
 import io.github.lemcoder.koog.edge.log.KoogEdgeLog
+import io.github.lemcoder.koog.edge.provider.LocalLLMProvider
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -95,7 +97,6 @@ internal open class LeapLocalLLMClient(
         val result = Message.Assistant(
             content = responseText.toString(),
             metaInfo = metaInfo,
-            attachments = listOf(),
             finishReason = finishReason.orEmpty()
         )
 
@@ -152,6 +153,12 @@ internal open class LeapLocalLLMClient(
     ): ModerationResult {
         TODO()
     }
+
+    override fun llmProvider(): LLMProvider = LocalLLMProvider
+
+    override fun close() {
+        KoogEdgeLog.info("Closing LeapLocalLLMClient")
+    }
 }
 
 private fun StreamFrame.toMessageResponse(): Message.Response {
@@ -160,14 +167,12 @@ private fun StreamFrame.toMessageResponse(): Message.Response {
         is StreamFrame.Append -> Message.Assistant(
             content = this.text,
             metaInfo = metaInfo,
-            attachments = listOf(),
             finishReason = "",
         )
 
         is StreamFrame.End -> Message.Assistant(
             content = "",
             metaInfo = metaInfo,
-            attachments = listOf(),
             finishReason = this.finishReason,
         )
 

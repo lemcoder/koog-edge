@@ -37,6 +37,11 @@ internal val koogToLeapMessageConverter = Converter<Message, ChatMessage> { mess
             role = ChatMessage.Role.TOOL,
             content = message.content()
         )
+
+        is Message.Reasoning -> ChatMessage(
+            role = ChatMessage.Role.ASSISTANT,
+            content = message.content()
+        )
     }
 }
 

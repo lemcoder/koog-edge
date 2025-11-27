@@ -1,12 +1,12 @@
 package io.github.lemcoder.koogedge.agents.calculator
 
 import ai.koog.agents.core.agent.AIAgent
-import ai.koog.agents.core.agent.asAssistantMessage
 import ai.koog.agents.core.agent.config.AIAgentConfig
-import ai.koog.agents.core.agent.executeTool
 import ai.koog.agents.core.agent.functionalStrategy
-import ai.koog.agents.core.agent.requestLLM
-import ai.koog.agents.core.agent.sendToolResult
+import ai.koog.agents.core.dsl.extension.asAssistantMessage
+import ai.koog.agents.core.dsl.extension.executeTool
+import ai.koog.agents.core.dsl.extension.requestLLM
+import ai.koog.agents.core.dsl.extension.sendToolResult
 import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.executor.llms.SingleLLMPromptExecutor
@@ -51,7 +51,10 @@ internal class CalculatorAgentProvider : AgentProvider {
                 val result = executeTool(response)
                 llm.withPrompt {
                     this.withMessages { messages ->
-                        messages + Message.User(content = "Give me the answer based on tool result", metaInfo = RequestMetaInfo.Empty)
+                        messages + Message.User(
+                            content = "Give me the answer based on tool result",
+                            metaInfo = RequestMetaInfo.Empty
+                        )
                     }
                 }
                 response = sendToolResult(result)

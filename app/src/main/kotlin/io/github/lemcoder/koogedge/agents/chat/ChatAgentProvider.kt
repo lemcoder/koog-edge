@@ -3,7 +3,7 @@ package io.github.lemcoder.koogedge.agents.chat
 import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.agent.config.AIAgentConfig
 import ai.koog.agents.core.agent.functionalStrategy
-import ai.koog.agents.core.agent.requestLLM
+import ai.koog.agents.core.dsl.extension.requestLLM
 import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.executor.llms.SingleLLMPromptExecutor
 import io.github.lemcoder.koog.edge.cactus.CactusLLMParams
