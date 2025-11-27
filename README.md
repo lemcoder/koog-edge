@@ -3,6 +3,9 @@
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.lemcoder/koog-edge.svg)](https://search.maven.org/artifact/io.github.lemcoder/koog-edge)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
+> Stable? That's for horses 🐴 This library is in early experimental stage, do not use it for any serious work!
+
+
 Koog Edge is a Kotlin Multiplatform library that brings **on-device AI capabilities** to your mobile
 applications. It provides seamless integration between
 the [Koog Agents framework](https://github.com/JetBrains/koog) and local Small Language Models (SLMs),
