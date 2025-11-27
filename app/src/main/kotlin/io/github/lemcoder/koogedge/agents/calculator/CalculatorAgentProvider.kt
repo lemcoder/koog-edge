@@ -4,8 +4,6 @@ import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.agent.config.AIAgentConfig
 import ai.koog.agents.core.agent.functionalStrategy
 import ai.koog.agents.core.dsl.extension.asAssistantMessage
-import ai.koog.agents.core.dsl.extension.clearHistory
-import ai.koog.agents.core.dsl.extension.compressHistory
 import ai.koog.agents.core.dsl.extension.executeTool
 import ai.koog.agents.core.dsl.extension.requestLLM
 import ai.koog.agents.core.environment.result
