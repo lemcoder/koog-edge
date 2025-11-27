@@ -143,60 +143,6 @@ val result = agent.execute("Hello! How are you?")
 println(result)
 ```
 
-### 3. Using Tools (Function Calling)
-
-```kotlin
-import ai.koog.agents.core.tools.SimpleTool
-import ai.koog.agents.core.agent.functionalStrategy
-import ai.koog.agents.core.dsl.extension.requestLLM
-import ai.koog.agents.core.dsl.extension.tools
-
-// Define a tool
-object CalculatorTool : SimpleTool<CalculatorTool.Args>() {
-    override val id = "calculator"
-    override val description = "Performs basic arithmetic operations"
-    
-    data class Args(
-        val operation: String,
-        val a: Double,
-        val b: Double
-    )
-    
-    override suspend fun execute(args: Args): String {
-        return when (args.operation) {
-            "add" -> (args.a + args.b).toString()
-            "subtract" -> (args.a - args.b).toString()
-            "multiply" -> (args.a * args.b).toString()
-            "divide" -> (args.a / args.b).toString()
-            else -> "Unknown operation"
-        }
-    }
-}
-
-// Use the tool in your agent strategy
-val strategyWithTools = functionalStrategy<String, String>("Calculator Agent") { input ->
-    tools(CalculatorTool)
-    
-    val response = requestLLM(input, allowToolCalls = true)
-    return@functionalStrategy response.content
-}
-
-val agent = AIAgent(
-    promptExecutor = executor,
-    strategy = strategyWithTools,
-    agentConfig = AIAgentConfig(
-        prompt = prompt("calculator") {
-            system("You are a helpful calculator assistant. Use the calculator tool when needed.")
-        },
-        model = CactusModels.Chat.Qwen3_0_6B,
-        maxAgentIterations = 10
-    )
-)
-
-// The agent will automatically call the calculator tool when needed
-val result = agent.execute("What is 15 multiplied by 7?")
-```
-
 ## Advanced Usage
 
 ### Downloading Models
@@ -339,9 +285,9 @@ Koog Edge acts as a bridge between the Koog Agents framework and on-device infer
 
 Koog Edge is built on top of:
 
-- [Koog Agents Core](https://github.com/koog-ai/koog) - AI agent framework
+- [Koog Agents Core](https://github.com/JetBrains/koog) - AI agent framework
 - [Cactus Compute](https://cactuscompute.com/) - On-device AI inference
-- [Leap SDK](https://leap.ai) - Mobile AI SDK (Android only)
+- [Leap SDK](https://leap.liquid.ai) - Mobile AI SDK (Android only)
 
 ## Example App
 
