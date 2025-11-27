@@ -14,6 +14,7 @@ leap = "0.7.0" # TODO Update to latest version and migrate
 cactus = "1.0.2-beta"
 
 kotlinx-serialization = "1.9.0"
+maven-publish = "0.30.0"
 
 
 [libraries]
@@ -46,4 +47,5 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish" }
 
