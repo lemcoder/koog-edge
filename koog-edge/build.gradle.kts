@@ -1,19 +1,40 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.multiplatform)
     id("maven-publish")
 }
 
 group = "io.github.lemcoder"
-version = "0.0.1"
+version = "0.0.2"
+
+kotlin {
+    jvmToolchain(17)
+
+    androidTarget {
+        publishLibraryVariants("release", "debug")
+    }
+
+    iosArm64()
+
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.cactus)
+            implementation(libs.koog.agents.core)
+        }
+
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+        }
+
+        androidMain.dependencies {
+            implementation(libs.leap.sdk)
+        }
+    }
+}
 
 android {
     namespace = "io.github.lemcoder.koog"
     compileSdk = libs.versions.compileSdk.get().toInt()
-
-    kotlin {
-        jvmToolchain(17)
-    }
 
     defaultConfig {
         minSdk = libs.versions.minSdk.get().toInt()
@@ -35,26 +56,7 @@ android {
     }
 }
 
-dependencies {
-    implementation(libs.leap.sdk)
-    implementation(files("libs/cactus-beta-1.0.0.aar"))
-    implementation(libs.koog.agents.core)
-    testImplementation(libs.kotlin.test)
-}
-
 publishing {
-    publications {
-        create<MavenPublication>("release") {
-            afterEvaluate {
-                from(components["release"])
-            }
-
-            groupId = "io.github.lemcoder.koog"
-            artifactId = "koog-edge"
-            version = "0.0.1"
-        }
-    }
-
     repositories {
         mavenLocal()
         maven {
