@@ -14,24 +14,20 @@ kotlin {
         publishLibraryVariants("release", "debug")
     }
 
+    iosArm64()
+
     sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation("com.cactuscompute:cactus:1.0.2-beta")
-                implementation(libs.koog.agents.core)
-            }
+        commonMain.dependencies {
+            implementation(libs.cactus)
+            implementation(libs.koog.agents.core)
         }
 
-        val commonTest by getting {
-            dependencies {
-                implementation(libs.kotlin.test)
-            }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
         }
 
-        val androidMain by getting {
-            dependencies {
-                implementation(libs.leap.sdk)
-            }
+        androidMain.dependencies {
+            implementation(libs.leap.sdk)
         }
     }
 }
