@@ -4,14 +4,16 @@ import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.agent.config.AIAgentConfig
 import ai.koog.agents.core.agent.functionalStrategy
 import ai.koog.agents.core.dsl.extension.asAssistantMessage
+import ai.koog.agents.core.dsl.extension.clearHistory
+import ai.koog.agents.core.dsl.extension.compressHistory
 import ai.koog.agents.core.dsl.extension.executeTool
 import ai.koog.agents.core.dsl.extension.requestLLM
-import ai.koog.agents.core.dsl.extension.sendToolResult
+import ai.koog.agents.core.environment.result
 import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.executor.llms.SingleLLMPromptExecutor
 import ai.koog.prompt.message.Message
-import ai.koog.prompt.message.RequestMetaInfo
+import android.util.Log
 import io.github.lemcoder.koog.edge.cactus.CactusLLMParams
 import io.github.lemcoder.koog.edge.cactus.CactusModels
 import io.github.lemcoder.koog.edge.cactus.getCactusLLMClient
@@ -44,20 +46,34 @@ internal class CalculatorAgentProvider : AgentProvider {
 
         @Suppress("DuplicatedCode")
         val strategy = functionalStrategy<String, String>(title) { input ->
-            var response = requestLLM(input)
+            llm.writeSession {
+                appendPrompt {
+                    user {
+                        +"/no_think"
+                        +"pick the best tool to answer the question: $input and call it immediately."
+                    }
+                }
+            }
 
+            var response = requestLLM(input)
             while (response is Message.Tool.Call) {
                 onToolCallEvent("Tool ${response.tool}")
                 val result = executeTool(response)
-                llm.withPrompt {
-                    this.withMessages { messages ->
-                        messages + Message.User(
-                            content = "Give me the answer based on tool result",
-                            metaInfo = RequestMetaInfo.Empty
-                        )
+                Log.w("CalculatorAgent", "Tool result: ${result.result}")
+                llm.writeSession {
+                    appendPrompt {
+                        tool {
+                            result(result)
+                        }
                     }
+
+                    appendPrompt {
+                        user {
+                            +"Based on the tool result, please provide only result number."
+                        }
+                    }
+                    response = requestLLM()
                 }
-                response = sendToolResult(result)
             }
 
             val assistantContent = response.asAssistantMessage().content
