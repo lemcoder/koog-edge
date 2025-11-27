@@ -325,7 +325,6 @@ limitations under the License.
 ## Links
 
 - 📦 [Maven Central](https://search.maven.org/artifact/io.github.lemcoder/koog-edge)
-- 🤖 [Koog Agents Framework](https://github.com/koog-ai/koog)
 - 📧 [Contact](mailto:lemanski.dev@gmail.com)
 
 ---
