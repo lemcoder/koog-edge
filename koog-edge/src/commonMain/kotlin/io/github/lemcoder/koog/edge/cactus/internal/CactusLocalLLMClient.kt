@@ -15,6 +15,7 @@ import com.cactus.CactusLM
 import com.cactus.ChatMessage
 import com.cactus.InferenceMode
 import com.cactus.models.CactusTool
+import io.github.lemcoder.koog.edge.LocalModelLoader
 import io.github.lemcoder.koog.edge.cactus.CactusLLMParams
 import io.github.lemcoder.koog.edge.cactus.getCactusLLMModelById
 import io.github.lemcoder.koog.edge.cactus.internal.converter.cactusToKoogToolCallResponseConverter
@@ -25,7 +26,7 @@ import io.github.lemcoder.koog.edge.provider.LocalLLMProvider
 import kotlinx.datetime.Clock
 
 class CactusLocalLLMClient(
-    private val modelLoader: CactusModelLoader
+    private val modelLoader: LocalModelLoader<CactusLM?>
 ) : LLMClient {
     override suspend fun execute(
         prompt: Prompt,

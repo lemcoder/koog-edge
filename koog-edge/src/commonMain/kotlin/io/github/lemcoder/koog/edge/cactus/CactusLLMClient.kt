@@ -1,11 +1,16 @@
 package io.github.lemcoder.koog.edge.cactus
 
 import ai.koog.prompt.executor.clients.LLMClient
-import android.content.Context
 import io.github.lemcoder.koog.edge.cactus.internal.CactusLocalLLMClient
-import io.github.lemcoder.koog.edge.cactus.internal.CactusModelLoader
+import io.github.lemcoder.koog.edge.cactus.internal.cactusModelLoader
 
-fun getCactusLLMClient(context: Context): LLMClient {
-    CactusModelLoader.initializeIfNecessary(context)
-    return CactusLocalLLMClient(CactusModelLoader)
+/**
+ * A context type for Koog Edge on different platforms.
+ * on Android, this could be android.content.Context
+ * on iOS, this can be null
+ */
+typealias KoogEdgeContext = Any?
+
+fun getCactusLLMClient(context: KoogEdgeContext): LLMClient {
+    return CactusLocalLLMClient(cactusModelLoader(context))
 }
