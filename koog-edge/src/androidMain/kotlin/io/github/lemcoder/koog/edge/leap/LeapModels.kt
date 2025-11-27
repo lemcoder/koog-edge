@@ -2,13 +2,13 @@ package io.github.lemcoder.koog.edge.leap
 
 import ai.koog.prompt.llm.LLMCapability
 import ai.koog.prompt.llm.LLModel
-import io.github.lemcoder.koog.edge.AndroidLocalModel
-import io.github.lemcoder.koog.edge.provider.AndroidLocalLLMProvider
+import io.github.lemcoder.koog.edge.LocalModel
+import io.github.lemcoder.koog.edge.provider.LocalLLMProvider
 
-sealed interface LeapModels : AndroidLocalModel {
-    data object Chat : AndroidLocalModel {
+sealed interface LeapModels : LocalModel {
+    data object Chat : LocalModel {
         val LFM2_1_2B_Tool = LLModel(
-            provider = AndroidLocalLLMProvider,
+            provider = LocalLLMProvider,
             id = "lfm2-1.2b-tool-20250912-8da4w",
             capabilities = listOf(
                 LLMCapability.Tools,

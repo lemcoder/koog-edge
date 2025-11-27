@@ -15,6 +15,7 @@ import io.github.lemcoder.koog.edge.leap.internal.converter.leapFunctionConverte
 import io.github.lemcoder.koog.edge.leap.internal.converter.koogToLeapMessageConverter
 import io.github.lemcoder.koog.edge.leap.internal.converter.messageResponseToStreamFrameConverter
 import io.github.lemcoder.koog.edge.log.AndroidEdgeLogger
+import io.github.lemcoder.koog.edge.log.KoogEdgeLog
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -29,7 +30,7 @@ internal open class LeapLocalLLMClient(
         model: LLModel,
         tools: List<ToolDescriptor>
     ): List<Message.Response> {
-        AndroidEdgeLogger.w { "Executing prompt: $prompt with tools: $tools and model: $model" }
+        KoogEdgeLog.w { "Executing prompt: $prompt with tools: $tools and model: $model" }
         require(model.capabilities.contains(LLMCapability.Completion)) {
             "Model ${model.id} does not support chat completions"
         }
@@ -52,7 +53,7 @@ internal open class LeapLocalLLMClient(
         }
 
         tools.map(leapFunctionConverter::convert).forEach { function ->
-            AndroidEdgeLogger.w("Registering: $function")
+            KoogEdgeLog.w { "Registering: $function" }
             conversation.registerFunction(function)
         }
 
@@ -67,11 +68,11 @@ internal open class LeapLocalLLMClient(
                 latestMessage,
                 koogToLeapParametersConverter.convert(prompt.params)
             ).catch {
-                AndroidEdgeLogger.error("Error during response generation", it)
+                KoogEdgeLog.error("Error during response generation", it)
             }.collect { messageResponse ->
                 val frames = messageResponseToStreamFrameConverter.convert(messageResponse)
                 frames.forEach { frame ->
-                    AndroidEdgeLogger.w("Received frame: $frame")
+                    KoogEdgeLog.warning("Received frame: $frame")
                     when (frame) {
                         is StreamFrame.Append -> responseText.append(frame.text)
                         is StreamFrame.End -> finishReason = frame.finishReason
@@ -83,10 +84,10 @@ internal open class LeapLocalLLMClient(
 
         if (responseText.isEmpty()) {
             if (toolCalls.isNotEmpty()) {
-                AndroidEdgeLogger.w("Model returned only tool calls, no assistant response.")
+                KoogEdgeLog.warning("Model returned only tool calls, no assistant response.")
                 return toolCalls
             }
-            AndroidEdgeLogger.error("Model returned empty response. Frames: $toolCalls, finishReason: $finishReason")
+            KoogEdgeLog.error("Model returned empty response. Frames: $toolCalls, finishReason: $finishReason")
             throw IllegalStateException("Model returned empty response. Check input prompt and model configuration.")
         }
 
@@ -107,7 +108,7 @@ internal open class LeapLocalLLMClient(
         model: LLModel,
         tools: List<ToolDescriptor>
     ): Flow<StreamFrame> = flow {
-        AndroidEdgeLogger.w { "Executing prompt: $prompt with tools: $tools and model: $model" }
+        KoogEdgeLog.w { "Executing prompt: $prompt with tools: $tools and model: $model" }
         require(model.capabilities.contains(LLMCapability.Completion)) {
             "Model ${model.id} does not support chat completions"
         }
@@ -131,7 +132,7 @@ internal open class LeapLocalLLMClient(
         }
 
         tools.map(leapFunctionConverter::convert).forEach { function ->
-            AndroidEdgeLogger.w("Registering: $function")
+            KoogEdgeLog.warning("Registering: $function")
             conversation.registerFunction(function)
         }
 

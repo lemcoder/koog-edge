@@ -2,14 +2,9 @@ package io.github.lemcoder.koog.edge.log
 
 import android.util.Log
 
-interface KoogEdgeLogger {
-    fun info(message: String)
-    fun warning(message: String)
-    fun error(message: String, throwable: Throwable? = null)
-}
-
-internal object AndroidEdgeLogger : KoogEdgeLogger {
+internal class AndroidEdgeLogger : KoogEdgeLogger {
     private val tag = this::class.simpleName
+
     override fun info(message: String) {
         Log.i(tag, message)
     }
@@ -29,4 +24,8 @@ internal object AndroidEdgeLogger : KoogEdgeLogger {
     fun w(messageProducer: () -> String) {
         Log.w(tag, messageProducer())
     }
+}
+
+internal actual fun getPlatformLogger(): KoogEdgeLogger {
+    return AndroidEdgeLogger()
 }

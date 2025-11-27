@@ -11,6 +11,7 @@ import ai.koog.prompt.message.ResponseMetaInfo
 import com.cactus.CactusCompletionParams
 import com.cactus.CactusCompletionResult
 import com.cactus.CactusLM
+import com.cactus.ChatMessage
 import com.cactus.InferenceMode
 import com.cactus.models.CactusTool
 import io.github.lemcoder.koog.edge.cactus.CactusLLMParams
@@ -18,7 +19,7 @@ import io.github.lemcoder.koog.edge.cactus.getCactusLLMModelById
 import io.github.lemcoder.koog.edge.cactus.internal.converter.cactusToKoogToolCallResponseConverter
 import io.github.lemcoder.koog.edge.cactus.internal.converter.koogToCactusMessageConverter
 import io.github.lemcoder.koog.edge.cactus.internal.converter.koogToCactusToolConverter
-import io.github.lemcoder.koog.edge.log.AndroidEdgeLogger
+import io.github.lemcoder.koog.edge.log.KoogEdgeLog
 import kotlinx.datetime.Clock
 
 class CactusLocalLLMClient(
@@ -29,7 +30,7 @@ class CactusLocalLLMClient(
         model: LLModel,
         tools: List<ToolDescriptor>
     ): List<Message.Response> {
-        AndroidEdgeLogger.w { "Executing prompt: $prompt with tools: $tools and model: $model" }
+        KoogEdgeLog.w { "Executing prompt: $prompt with tools: $tools and model: $model" }
         require(model.capabilities.contains(LLMCapability.Completion)) {
             "Model ${model.id} does not support chat completions"
         }
@@ -48,7 +49,7 @@ class CactusLocalLLMClient(
 
         val cactusTools = tools.map(koogToCactusToolConverter::convert).also {
             it.forEach { tool ->
-                AndroidEdgeLogger.w("Registering: $tool")
+                KoogEdgeLog.w { "Registering: $tool" }
             }
         }
 
@@ -60,7 +61,7 @@ class CactusLocalLLMClient(
             cactusTools
         )
         while (cactusResult == null || !cactusResult.success) {
-            AndroidEdgeLogger.w("Cactus inference failed, retrying")
+            KoogEdgeLog.w { "Cactus inference failed, retrying" }
             cactusResult = runCactusInference(
                 model,
                 modelRunner,
@@ -77,11 +78,11 @@ class CactusLocalLLMClient(
 
         if (responseText.isEmpty()) {
             if (toolCalls.isNotEmpty()) {
-                AndroidEdgeLogger.w("Model returned only tool calls, no assistant response.")
-                AndroidEdgeLogger.w("tools called at ${Clock.System.now()}: $toolCalls")
+                KoogEdgeLog.w { "Model returned only tool calls, no assistant response." }
+                KoogEdgeLog.w { "tools called at ${Clock.System.now()}: $toolCalls" }
                 return toolCalls
             }
-            AndroidEdgeLogger.error("Model returned empty response. Frames: $toolCalls")
+            KoogEdgeLog.error("Model returned empty response. Frames: $toolCalls")
             throw IllegalStateException("Model returned empty response. Check input prompt and model configuration.")
         }
 
@@ -104,7 +105,7 @@ class CactusLocalLLMClient(
     private suspend fun runCactusInference(
         model: LLModel,
         modelRunner: CactusLM,
-        history: List<com.cactus.ChatMessage>,
+        history: List<ChatMessage>,
         params: CactusLLMParams?,
         cactusTools: List<CactusTool>
     ): CactusCompletionResult? {

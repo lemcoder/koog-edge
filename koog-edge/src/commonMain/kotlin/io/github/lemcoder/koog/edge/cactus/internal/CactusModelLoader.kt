@@ -6,7 +6,7 @@ import com.cactus.CactusContextInitializer
 import com.cactus.CactusInitParams
 import com.cactus.CactusLM
 import io.github.lemcoder.koog.edge.LocalModelLoader
-import io.github.lemcoder.koog.edge.log.AndroidEdgeLogger
+import io.github.lemcoder.koog.edge.log.KoogEdgeLog
 
 object CactusModelLoader : LocalModelLoader<CactusLM?> {
     private var isInitialized = false
@@ -20,15 +20,15 @@ object CactusModelLoader : LocalModelLoader<CactusLM?> {
     }
 
     override suspend fun loadModel(model: LLModel): CactusLM? {
-        AndroidEdgeLogger.info("Loading Cactus model: ${model.id}")
+        KoogEdgeLog.info("Loading Cactus model: ${model.id}")
 
         if (lastLoadedModel?.id == model.id) {
             val cached = lastCreatedExecutor
             if (cached != null && cached.isLoaded()) {
-                AndroidEdgeLogger.warning("Using cached Cactus model executor for model: ${model.id}")
+                KoogEdgeLog.warning("Using cached Cactus model executor for model: ${model.id}")
                 return cached
             }
-            AndroidEdgeLogger.warning("Cached Cactus model executor is not loaded, creating a new one for model: ${model.id}")
+            KoogEdgeLog.warning("Cached Cactus model executor is not loaded, creating a new one for model: ${model.id}")
         }
 
         val lm = CactusLM(

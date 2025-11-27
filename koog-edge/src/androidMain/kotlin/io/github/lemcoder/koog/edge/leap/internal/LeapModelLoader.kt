@@ -7,6 +7,7 @@ import ai.liquid.leap.ModelLoadingOptions
 import ai.liquid.leap.ModelRunner
 import io.github.lemcoder.koog.edge.LocalModelLoader
 import io.github.lemcoder.koog.edge.log.AndroidEdgeLogger
+import io.github.lemcoder.koog.edge.log.KoogEdgeLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -45,7 +46,7 @@ internal class LeapModelLoader(
                         options = options
                     )
                 } catch (e: LeapModelLoadingException) {
-                    AndroidEdgeLogger.error("Error loading model: ${e.message}", e)
+                    KoogEdgeLog.error("Error loading model: ${e.message}", e)
                 }
             }
             loadingJob?.join()
