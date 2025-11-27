@@ -5,7 +5,7 @@
 
 Koog Edge is a Kotlin Multiplatform library that brings **on-device AI capabilities** to your mobile
 applications. It provides seamless integration between
-the [Koog Agents framework](https://github.com/koog-ai/koog) and local Small Language Models (SLMs),
+the [Koog Agents framework](https://github.com/JetBrains/koog) and local Small Language Models (SLMs),
 enabling privacy-focused, offline AI experiences.
 
 ## Features
