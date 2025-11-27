@@ -12,6 +12,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.offsetAt
 import kotlinx.datetime.plus
 import kotlinx.datetime.toInstant
+import kotlinx.datetime.toJavaInstant
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
@@ -197,12 +198,8 @@ object WeatherTools {
         data class Args(
             @property:LLMDescription("The location to get the weather forecast for (e.g., 'New York', 'London', 'Paris')")
             val location: String,
-            @property:LLMDescription("The date to get the weather forecast for in ISO format (e.g., '2023-05-20'). If empty, the forecast starts from today.")
-            val date: String = "",
             @property:LLMDescription("The number of days to forecast (1-7)")
             val days: Int = 1,
-            @property:LLMDescription("The granularity of the forecast: 'daily' for day-by-day forecast or 'hourly' for hour-by-hour forecast. Default is 'daily'.")
-            val granularity: Granularity = Granularity.DAILY
         )
 
         @Serializable
@@ -237,14 +234,15 @@ object WeatherTools {
             "Get a weather forecast for a location with specified granularity (daily or hourly)"
 
         override suspend fun execute(args: Args): Result {
+            val date = Clock.System.now().toString()
             // Search for the location
             val locations = openMeteoClient.searchLocation(args.location)
             if (locations.isEmpty()) {
                 return Result(
                     locationName = args.location,
                     forecast = "Location not found",
-                    date = args.date,
-                    granularity = args.granularity
+                    date = date,
+                    granularity = Granularity.DAILY
                 )
             }
 
@@ -259,17 +257,14 @@ object WeatherTools {
             )
 
             // Format the forecast based on granularity
-            val formattedForecast = when (args.granularity) {
-                Granularity.HOURLY -> formatHourlyForecast(forecast, args.date)
-                Granularity.DAILY -> formatDailyForecast(forecast, args.date)
-            }
+            val formattedForecast = formatDailyForecast(forecast, date)
 
             return Result(
                 locationName = location.name,
                 locationCountry = location.country,
                 forecast = formattedForecast,
-                date = args.date,
-                granularity = args.granularity
+                date = date,
+                granularity = Granularity.DAILY
             )
         }
 

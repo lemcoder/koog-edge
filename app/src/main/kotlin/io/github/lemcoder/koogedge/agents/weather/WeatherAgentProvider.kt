@@ -2,18 +2,15 @@ package io.github.lemcoder.koogedge.agents.weather
 
 import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.dsl.extension.asAssistantMessage
-import ai.koog.agents.core.dsl.extension.compressHistory
 import ai.koog.agents.core.agent.config.AIAgentConfig
-import ai.koog.agents.core.dsl.extension.containsToolCalls
-import ai.koog.agents.core.dsl.extension.executeMultipleTools
-import ai.koog.agents.core.dsl.extension.extractToolCalls
 import ai.koog.agents.core.agent.functionalStrategy
-import ai.koog.agents.core.dsl.extension.latestTokenUsage
-import ai.koog.agents.core.dsl.extension.requestLLMMultiple
-import ai.koog.agents.core.dsl.extension.sendMultipleToolResults
+import ai.koog.agents.core.dsl.extension.executeTool
+import ai.koog.agents.core.dsl.extension.requestLLM
+import ai.koog.agents.core.dsl.extension.sendToolResult
 import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.executor.llms.SingleLLMPromptExecutor
+import ai.koog.prompt.message.Message
 import io.github.lemcoder.koog.edge.cactus.CactusModels
 import io.github.lemcoder.koog.edge.cactus.getCactusLLMClient
 import io.github.lemcoder.koog.edge.leap.getLeapLLMClient
@@ -41,32 +38,21 @@ internal class WeatherAgentProvider : AgentProvider {
 
         // Create tool registry with weather tools
         val toolRegistry = ToolRegistry {
-            tool(WeatherTools.CurrentDatetimeTool)
-            tool(WeatherTools.AddDatetimeTool)
             tool(WeatherTools.WeatherForecastTool)
-            tool(ExitTool)
         }
 
         @Suppress("DuplicatedCode")
         val strategy = functionalStrategy<String, String>(title) { input ->
-            var responses = requestLLMMultiple(input)
+            var response = requestLLM(input)
 
-            while (responses.containsToolCalls()) {
-                val tools = extractToolCalls(responses)
+            while (response is Message.Tool.Call) {
+                val tool = response
 
-                tools.forEach { toolCall ->
-                    onToolCallEvent("Tool ${toolCall.tool}")
-                }
-
-                if (latestTokenUsage() > 100500) {
-                    compressHistory()
-                }
-
-                val results = executeMultipleTools(tools)
-                responses = sendMultipleToolResults(results)
+                val result = executeTool(tool)
+                response = sendToolResult(result)
             }
 
-            val assistantContent = responses.single().asAssistantMessage().content
+            val assistantContent = response.asAssistantMessage().content
             onAssistantMessage(assistantContent)
         }
 
@@ -75,17 +61,7 @@ internal class WeatherAgentProvider : AgentProvider {
             prompt = prompt("test") {
                 system(
                     """
-                    You are a helpful weather assistant.
-                    You can provide weather forecasts for any location in the world and help the user plan their activities.
-                    ALWAYS use the available tools to get weather data. NEVER say you do not have access to weather data.
-                    ALWAYS use date and time tools to handle dates and times.
-                    Today's date and time is ${Clock.System.now()}.
-                    When you receive a tool result, always explain it to the user in natural language.
-                    Use the tools at your disposal to:
-                    1. Get the current date and time
-                    2. Add days, hours, or minutes to a date
-                    3. Get weather forecasts for specific locations and dates
-                    Do not say you lack access to data; always use the tools.
+                    You are a helpful weather assistant. Use the tools available to provide accurate weather forecasts.
                     """.trimIndent()
                 )
             },

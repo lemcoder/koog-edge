@@ -38,7 +38,7 @@ fun WeatherToolScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        var city by remember { mutableStateOf("New York, 2025-10-22, DAILY") }
+        var city by remember { mutableStateOf("London today") }
         OutlinedTextField(
             value = city,
             onValueChange = {
