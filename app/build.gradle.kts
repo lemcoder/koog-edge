@@ -1,17 +1,16 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 android {
     namespace = "io.github.lemcoder.koogedge"
     compileSdk = libs.versions.compileSdk.get().toInt()
-
-    kotlin {
-        jvmToolchain(17)
-    }
 
     defaultConfig {
         applicationId = "io.github.lemcoder.koog_edge"

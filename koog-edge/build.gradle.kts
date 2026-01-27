@@ -8,13 +8,30 @@ plugins {
 }
 
 group = "io.github.lemcoder"
-version = "0.0.2"
+version = "0.0.3"
 
 kotlin {
     jvmToolchain(17)
 
-    androidTarget {
-        publishLibraryVariants("release")
+    androidLibrary {
+        namespace = "io.github.lemcoder.core"
+        compileSdk = 36
+        minSdk = 31
+
+        withHostTestBuilder {}.configure {}
+        withDeviceTestBuilder {
+            sourceSetTreeName = "test"
+        }.configure {}
+
+//        buildTypes {
+//            release {
+//                isMinifyEnabled = false
+//                proguardFiles(
+//                    getDefaultProguardFile("proguard-android-optimize.txt"),
+//                    "proguard-rules.pro"
+//                )
+//            }
+//        }
     }
 
     iosArm64()
@@ -31,30 +48,6 @@ kotlin {
 
         androidMain.dependencies {
             implementation(libs.leap.sdk)
-        }
-    }
-}
-
-android {
-    namespace = "io.github.lemcoder.koog"
-    compileSdk = libs.versions.compileSdk.get().toInt()
-
-    defaultConfig {
-        minSdk = libs.versions.minSdk.get().toInt()
-        consumerProguardFiles("consumer-rules.pro")
-    }
-
-    testOptions {
-        unitTests.isReturnDefaultValues = true
-    }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
         }
     }
 }

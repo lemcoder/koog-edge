@@ -6,9 +6,14 @@ import kotlinx.serialization.Serializable
 
 object CalculatorTools {
     abstract class CalculatorTool(
-        override val name: String,
-        override val description: String,
-    ) : Tool<CalculatorTool.Args, CalculatorTool.Result>() {
+        toolName: String,
+        toolDescription: String,
+    ) : Tool<CalculatorTool.Args, CalculatorTool.Result>(
+        argsSerializer = Args.serializer(),
+        resultSerializer = Result.serializer(),
+        name = toolName,
+        description = toolDescription,
+    ) {
         @Serializable
         data class Args(
             @property:LLMDescription("First number")
@@ -19,9 +24,6 @@ object CalculatorTools {
 
         @Serializable
         class Result(val result: Float)
-
-        final override val argsSerializer = Args.serializer()
-        final override val resultSerializer = Result.serializer()
     }
 
     /**
@@ -29,8 +31,8 @@ object CalculatorTools {
      */
 
     object PlusTool : CalculatorTool(
-        name = "plus",
-        description = "Addition",
+        toolName = "plus",
+        toolDescription = "Addition",
     ) {
         override suspend fun execute(args: Args): Result {
             return Result(args.a + args.b)
@@ -38,8 +40,8 @@ object CalculatorTools {
     }
 
     object MinusTool : CalculatorTool(
-        name = "minus",
-        description = "Subtracts b from a",
+        toolName = "minus",
+        toolDescription = "Subtracts b from a",
     ) {
         override suspend fun execute(args: Args): Result {
             return Result(args.a - args.b)
@@ -47,8 +49,8 @@ object CalculatorTools {
     }
 
     object DivideTool : CalculatorTool(
-        name = "divide",
-        description = "Divides a and b",
+        toolName = "divide",
+        toolDescription = "Divides a and b",
     ) {
         override suspend fun execute(args: Args): Result {
             return Result(args.a / args.b)
@@ -56,8 +58,8 @@ object CalculatorTools {
     }
 
     object MultiplyTool : CalculatorTool(
-        name = "multiply",
-        description = "Multiplies a and b",
+        toolName = "multiply",
+        toolDescription = "Multiplies a and b",
     ) {
         override suspend fun execute(args: Args): Result {
             return Result(args.a * args.b)

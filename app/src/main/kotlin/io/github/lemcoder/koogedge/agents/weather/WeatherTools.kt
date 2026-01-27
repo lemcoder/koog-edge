@@ -1,8 +1,6 @@
 package io.github.lemcoder.koogedge.agents.weather
 
 import ai.koog.agents.core.tools.Tool
-import ai.koog.agents.core.tools.ToolResult
-import ai.koog.agents.core.tools.ToolResultUtils
 import ai.koog.agents.core.tools.annotations.LLMDescription
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
@@ -12,9 +10,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.offsetAt
 import kotlinx.datetime.plus
 import kotlinx.datetime.toInstant
-import kotlinx.datetime.toJavaInstant
 import kotlinx.datetime.toLocalDateTime
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -41,7 +37,12 @@ object WeatherTools {
     /**
      * Tool for getting the current date and time
      */
-    object CurrentDatetimeTool : Tool<CurrentDatetimeTool.Args, CurrentDatetimeTool.Result>() {
+    object CurrentDatetimeTool : Tool<CurrentDatetimeTool.Args, CurrentDatetimeTool.Result>(
+        name = "current_datetime",
+        description = "Get the current date and time in the specified timezone",
+        argsSerializer = Args.serializer(),
+        resultSerializer = Result.serializer()
+    ) {
         @Serializable
         data class Args(
             @property:LLMDescription("The timezone to get the current date and time in (e.g., 'UTC', 'America/New_York', 'Europe/London'). Defaults to UTC.")
@@ -54,19 +55,7 @@ object WeatherTools {
             val date: String,
             val time: String,
             val timezone: String
-        ) : ToolResult.TextSerializable() {
-            override fun textForLLM(): String {
-                return "Current datetime: $datetime, Date: $date, Time: $time, Timezone: $timezone"
-            }
-        }
-
-        override val argsSerializer = Args.serializer()
-        override val resultSerializer: KSerializer<Result> =
-            ToolResultUtils.toTextSerializer<Result>()
-
-        override val name = "current_datetime"
-        override val description = "Get the current date and time in the specified timezone"
-
+        )
 
         override suspend fun execute(args: Args): Result {
             val zoneId = try {
@@ -96,7 +85,12 @@ object WeatherTools {
     /**
      * Tool for adding a duration to a date
      */
-    object AddDatetimeTool : Tool<AddDatetimeTool.Args, AddDatetimeTool.Result>() {
+    object AddDatetimeTool : Tool<AddDatetimeTool.Args, AddDatetimeTool.Result>(
+        name = "add_datetime",
+        description = "Add a duration to a date. Use this tool when you need to calculate offsets, such as tomorrow, in two days, etc.",
+        argsSerializer = Args.serializer(),
+        resultSerializer = Result.serializer()
+    ) {
         @Serializable
         data class Args(
             @property:LLMDescription("The date to add to in ISO format (e.g., '2023-05-20')")
@@ -116,43 +110,7 @@ object WeatherTools {
             val daysAdded: Int,
             val hoursAdded: Int,
             val minutesAdded: Int
-        ) : ToolResult.TextSerializable() {
-            override fun textForLLM(): String {
-                return buildString {
-                    append("Date: $date")
-                    if (originalDate.isBlank()) {
-                        append(" (starting from today)")
-                    } else {
-                        append(" (starting from $originalDate)")
-                    }
-
-                    if (daysAdded != 0 || hoursAdded != 0 || minutesAdded != 0) {
-                        append(" after adding")
-
-                        if (daysAdded != 0) {
-                            append(" $daysAdded days")
-                        }
-
-                        if (hoursAdded != 0) {
-                            if (daysAdded != 0) append(",")
-                            append(" $hoursAdded hours")
-                        }
-
-                        if (minutesAdded != 0) {
-                            if (daysAdded != 0 || hoursAdded != 0) append(",")
-                            append(" $minutesAdded minutes")
-                        }
-                    }
-                }
-            }
-        }
-
-        override val argsSerializer = Args.serializer()
-        override val resultSerializer = ToolResultUtils.toTextSerializer<Result>()
-
-        override val name = "add_datetime"
-        override val description =
-            "Add a duration to a date. Use this tool when you need to calculate offsets, such as tomorrow, in two days, etc."
+        )
 
         override suspend fun execute(args: Args): Result {
             val baseDate = if (args.date.isNotBlank()) {
@@ -193,7 +151,12 @@ object WeatherTools {
     /**
      * Tool for getting a weather forecast
      */
-    object WeatherForecastTool : Tool<WeatherForecastTool.Args, WeatherForecastTool.Result>() {
+    object WeatherForecastTool : Tool<WeatherForecastTool.Args, WeatherForecastTool.Result>(
+        name = "weather_forecast",
+        description = "Get a weather forecast for a location with specified granularity (daily or hourly)",
+        argsSerializer = Args.serializer(),
+        resultSerializer = Result.serializer()
+    ) {
         @Serializable
         data class Args(
             @property:LLMDescription("The location to get the weather forecast for (e.g., 'New York', 'London', 'Paris')")
@@ -209,29 +172,7 @@ object WeatherTools {
             val forecast: String,
             val date: String,
             val granularity: Granularity
-        ) : ToolResult.TextSerializable() {
-            override fun textForLLM(): String {
-                val granularityText = when (granularity) {
-                    Granularity.DAILY -> "daily"
-                    Granularity.HOURLY -> "hourly"
-                }
-                val dateInfo = if (date.isBlank()) "starting from today" else "for $date"
-                val formattedLocation = if (locationCountry.isNullOrBlank()) {
-                    locationName
-                } else {
-                    "$locationName, $locationCountry"
-                }.trim().trimEnd(',')
-
-                return "Weather forecast for $formattedLocation ($granularityText, $dateInfo):\n$forecast"
-            }
-        }
-
-        override val argsSerializer = Args.serializer()
-        override val resultSerializer = ToolResultUtils.toTextSerializer<Result>()
-
-        override val name = "weather_forecast"
-        override val description =
-            "Get a weather forecast for a location with specified granularity (daily or hourly)"
+        )
 
         override suspend fun execute(args: Args): Result {
             val date = Clock.System.now().toString()
@@ -292,50 +233,6 @@ object WeatherTools {
 
                     if (i < daily.time.size - 1) {
                         append("\n")
-                    }
-                }
-            }
-        }
-
-        private fun formatHourlyForecast(forecast: WeatherForecast, date: String): String {
-            val hourly = forecast.hourly ?: return "No hourly forecast data available"
-
-            val startDate = date.ifBlank {
-                Clock.System.now().toLocalDateTime(UTC_ZONE).date.toString()
-            }
-
-            // Find the starting index for the requested date
-            val startIndex = hourly.time.indexOfFirst {
-                it.startsWith(startDate) || it > startDate
-            }.coerceAtLeast(0)
-
-            return buildString {
-                // Group hourly forecasts by date for better readability
-                val groupedByDate =
-                    hourly.time.subList(startIndex, hourly.time.size).mapIndexed { index, time ->
-                        val actualIndex = startIndex + index
-                        val dateTime = time.split("T")
-                        val date = dateTime[0]
-                        val hour = if (dateTime.size > 1) dateTime[1].substringBefore(":") else "00"
-
-                        val temp = hourly.temperature2m?.getOrNull(actualIndex)?.toString() ?: "N/A"
-                        val precipProb =
-                            hourly.precipitationProbability?.getOrNull(actualIndex)?.toString()
-                                ?: "N/A"
-                        val weatherCode = hourly.weatherCode?.getOrNull(actualIndex)
-                        val weatherDesc = getWeatherDescription(weatherCode)
-
-                        Triple(
-                            date,
-                            "$hour:00: $weatherDesc, Temperature: ${temp}°C, Precipitation probability: $precipProb%",
-                            actualIndex
-                        )
-                    }.groupBy { it.first }
-
-                groupedByDate.forEach { (date, forecasts) ->
-                    append("$date:\n")
-                    forecasts.forEach { (_, forecast, _) ->
-                        append("  $forecast\n")
                     }
                 }
             }
