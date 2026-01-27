@@ -7,6 +7,8 @@ import com.cactus.CactusInitParams
 import com.cactus.CactusLM
 import io.github.lemcoder.koog.edge.LocalModelLoader
 import io.github.lemcoder.koog.edge.log.KoogEdgeLog
+import kotlinx.coroutines.runBlocking
+import kotlin.toString
 
 actual fun cactusModelLoader(context: Any?): LocalModelLoader<CactusLM?> = CactusModelLoader.apply {
     if (context is Context) {
@@ -53,5 +55,16 @@ internal object CactusModelLoader :
         lastCreatedExecutor = lm
         lastLoadedModel = model
         return lm.takeIf { it.isLoaded() }
+    }
+
+    private fun listModels() {
+        runBlocking {
+            val models = lastCreatedExecutor?.getModels() ?: return@runBlocking
+            for (model in models) {
+                if (model.supports_tool_calling) {
+                    KoogEdgeLog.w { model.toString() }
+                }
+            }
+        }
     }
 }
