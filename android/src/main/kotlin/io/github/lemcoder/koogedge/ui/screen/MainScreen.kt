@@ -26,18 +26,14 @@ fun MainScreen() {
     val destination by navigationService.destinationFlow.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(snackbarHostState) {
-        SnackbarUtil.snackbarHostState = snackbarHostState
-    }
+    LaunchedEffect(snackbarHostState) { SnackbarUtil.snackbarHostState = snackbarHostState }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        snackbarHost = { androidx.compose.material3.SnackbarHost(snackbarHostState) }
+        snackbarHost = { androidx.compose.material3.SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
-        AnimatedContent(
-            targetState = destination,
-            modifier = Modifier.padding(innerPadding)
-        ) { destination ->
+        AnimatedContent(targetState = destination, modifier = Modifier.padding(innerPadding)) {
+            destination ->
             when (destination) {
                 Destination.CalculatorTool -> CalculatorToolRoute()
                 Destination.ToolsList -> ToolsListRoute()
@@ -47,7 +43,5 @@ fun MainScreen() {
         }
     }
 
-    BackHandler {
-        navigationService.navigateBack()
-    }
+    BackHandler { navigationService.navigateBack() }
 }

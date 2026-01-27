@@ -13,34 +13,25 @@ interface NavigationService {
     fun navigateBack()
 
     companion object {
-        val Instance: NavigationService by lazy {
-            NavigationServiceImpl()
-        }
+        val Instance: NavigationService by lazy { NavigationServiceImpl() }
     }
 }
 
 private class NavigationServiceImpl() : NavigationService {
-    private val backStack = ArrayDeque<Destination>().apply {
-        add(Destination.ToolsList)
-    }
+    private val backStack = ArrayDeque<Destination>().apply { add(Destination.ToolsList) }
     private val _destinationFlow = MutableStateFlow(backStack.last())
     override val destinationFlow: StateFlow<Destination>
         get() = _destinationFlow.asStateFlow()
 
-
     override fun navigateTo(destination: Destination) {
         backStack.add(destination)
-        _destinationFlow.update {
-            destination
-        }
+        _destinationFlow.update { destination }
     }
 
     override fun navigateBack() {
         if (backStack.size > 1) {
             backStack.removeLastOrNull()
-            _destinationFlow.update {
-                backStack.last()
-            }
+            _destinationFlow.update { backStack.last() }
         }
     }
 }

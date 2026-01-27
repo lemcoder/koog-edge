@@ -10,8 +10,5 @@ fun CalculatorToolRoute() {
     val viewModel = viewModel { CalculatorToolViewModel() }
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    CalculatorToolScreen(
-        state = state,
-        onEvent = viewModel::onEvent
-    )
+    CalculatorToolScreen(state = state, onEvent = viewModel::onEvent)
 }

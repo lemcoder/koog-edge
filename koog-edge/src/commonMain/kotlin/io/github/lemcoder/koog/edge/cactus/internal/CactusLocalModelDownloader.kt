@@ -8,14 +8,10 @@ import kotlinx.coroutines.flow.flow
 
 internal class CactusLocalModelDownloader : LocalModelDownloader {
     override fun downloadModel(model: LLModel): Flow<Float> = flow {
-        val lm = CactusLM(
-            enableToolFiltering = false
-        )
+        val lm = CactusLM(enableToolFiltering = false)
         // TODO : implement progress tracking for Cactus SDK
         emit(0f)
-        lm.downloadModel(
-            model = model.id
-        )
+        lm.downloadModel(model = model.id)
         emit(1f)
     }
 }

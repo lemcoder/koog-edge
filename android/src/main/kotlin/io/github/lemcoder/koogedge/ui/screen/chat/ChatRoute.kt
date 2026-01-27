@@ -10,8 +10,5 @@ fun ChatRoute() {
     val viewModel = viewModel { ChatViewModel() }
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    ChatScreen(
-        state = state,
-        onEvent = viewModel::onEvent
-    )
+    ChatScreen(state = state, onEvent = viewModel::onEvent)
 }

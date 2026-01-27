@@ -18,41 +18,36 @@ import kotlinx.coroutines.withContext
 
 internal class LeapModelLoader(
     private val modelsPath: String,
-    private val options: ModelLoadingOptions = ModelLoadingOptions(
-        cpuThreads = 2
-    ),
+    private val options: ModelLoadingOptions = ModelLoadingOptions(cpuThreads = 2),
 ) : LocalModelLoader<ModelRunner?> {
     private val mutex = Mutex()
     private var loadingJob: Job? = null
     private var currentRunner: ModelRunner? = null
 
-    private val downloader = LeapDownloader(
-        config = LeapDownloaderConfig(
-            saveDir = modelsPath
-        )
-    )
+    private val downloader = LeapDownloader(config = LeapDownloaderConfig(saveDir = modelsPath))
 
-    override suspend fun loadModel(
-        model: LLModel,
-    ): ModelRunner? = withContext(Dispatchers.IO) {
-        mutex.withLock {
-            if (loadingJob?.isActive == true) {
-                throw IllegalStateException("A model is already loading")
-            }
-
-            loadingJob = launch {
-                try {
-                    currentRunner = downloader.loadModel(
-                        modelSlug = model.id,
-                        quantizationSlug = "Q_4_0", // Load 4-bit quantized models by default
-                        modelLoadingOptions = options
-                    )
-                } catch (e: LeapModelLoadingException) {
-                    KoogEdgeLog.error("Error loading model: ${e.message}", e)
+    override suspend fun loadModel(model: LLModel): ModelRunner? =
+        withContext(Dispatchers.IO) {
+            mutex.withLock {
+                if (loadingJob?.isActive == true) {
+                    throw IllegalStateException("A model is already loading")
                 }
+
+                loadingJob = launch {
+                    try {
+                        currentRunner =
+                            downloader.loadModel(
+                                modelSlug = model.id,
+                                quantizationSlug =
+                                    "Q_4_0", // Load 4-bit quantized models by default
+                                modelLoadingOptions = options,
+                            )
+                    } catch (e: LeapModelLoadingException) {
+                        KoogEdgeLog.error("Error loading model: ${e.message}", e)
+                    }
+                }
+                loadingJob?.join()
+                currentRunner
             }
-            loadingJob?.join()
-            currentRunner
         }
-    }
 }

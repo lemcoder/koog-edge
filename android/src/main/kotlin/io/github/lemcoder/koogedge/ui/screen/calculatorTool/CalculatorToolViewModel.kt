@@ -25,50 +25,29 @@ class CalculatorToolViewModel : MviViewModel<CalculatorToolState, CalculatorTool
 
     internal fun calculateUsingAgent(expression: String) {
         viewModelScope.launch {
-            _state.update {
-                it.copy(
-                    isCalculating = true
-                )
-            }
+            _state.update { it.copy(isCalculating = true) }
             val prompt = expression
             try {
-                val agent = CalculatorAgentProvider().provideAgent(
-                    onToolCallEvent = {
-                        _state.update { state ->
-                            state.copy(
-                                toolCalls = _state.value.toolCalls + it
-                            )
-                        }
-                    },
-                    onErrorEvent = {
-                        SnackbarUtil.showSnackbar(
-                            "Error occurred: $it",
+                val agent =
+                    CalculatorAgentProvider()
+                        .provideAgent(
+                            onToolCallEvent = {
+                                _state.update { state ->
+                                    state.copy(toolCalls = _state.value.toolCalls + it)
+                                }
+                            },
+                            onErrorEvent = { SnackbarUtil.showSnackbar("Error occurred: $it") },
+                            onAssistantMessage = {
+                                Log.d("CalculatorToolViewModel", "Assistant message: $it")
+                                _state.update { state -> state.copy(answer = it) }
+                                it
+                            },
                         )
-                    },
-                    onAssistantMessage = {
-                        Log.d("CalculatorToolViewModel", "Assistant message: $it")
-                        _state.update { state ->
-                            state.copy(
-                                answer = it
-                            )
-                        }
-                        it
-                    }
-                )
                 val result = agent.run(prompt)
 
-                _state.update {
-                    it.copy(
-                        isCalculating = false,
-                        answer = result
-                    )
-                }
+                _state.update { it.copy(isCalculating = false, answer = result) }
             } catch (ex: Exception) {
-                _state.update {
-                    it.copy(
-                        isCalculating = false,
-                    )
-                }
+                _state.update { it.copy(isCalculating = false) }
                 Log.e(this@CalculatorToolViewModel::class.simpleName, "Error occurred", ex)
             }
         }

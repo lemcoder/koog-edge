@@ -7,35 +7,29 @@ import io.github.lemcoder.koog.edge.provider.LocalLLMProvider
 
 sealed interface LeapModels : LocalModel {
     data object Chat : LocalModel {
-        val LFM2_1_2B_Tool = LLModel(
-            provider = LocalLLMProvider,
-            id = "LFM2-1.2B-Tool",
-            capabilities = listOf(
-                LLMCapability.Tools,
-                LLMCapability.Completion,
-            ),
-            contextLength = 32_768,
-        )
+        val LFM2_1_2B_Tool =
+            LLModel(
+                provider = LocalLLMProvider,
+                id = "LFM2-1.2B-Tool",
+                capabilities = listOf(LLMCapability.Tools, LLMCapability.Completion),
+                contextLength = 32_768,
+            )
 
-        val LFM2_1_2B_Instruct = LLModel(
-            provider = LocalLLMProvider,
-            id = "LFM2.5-1.2B-Instruct",
-            capabilities = listOf(
-                LLMCapability.Tools,
-                LLMCapability.Completion,
-            ),
-            contextLength = 32_768,
-        )
+        val LFM2_1_2B_Instruct =
+            LLModel(
+                provider = LocalLLMProvider,
+                id = "LFM2.5-1.2B-Instruct",
+                capabilities = listOf(LLMCapability.Tools, LLMCapability.Completion),
+                contextLength = 32_768,
+            )
 
-        val LFM2_1_2B_Thinking = LLModel(
-            provider = LocalLLMProvider,
-            id = "LFM2.5-1.2B-Thinking",
-            capabilities = listOf(
-                LLMCapability.Tools,
-                LLMCapability.Completion,
-            ),
-            contextLength = 32_768,
-        )
+        val LFM2_1_2B_Thinking =
+            LLModel(
+                provider = LocalLLMProvider,
+                id = "LFM2.5-1.2B-Thinking",
+                capabilities = listOf(LLMCapability.Tools, LLMCapability.Completion),
+                contextLength = 32_768,
+            )
     }
 }
 

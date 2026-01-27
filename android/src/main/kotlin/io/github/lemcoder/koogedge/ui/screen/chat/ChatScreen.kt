@@ -29,29 +29,18 @@ import androidx.compose.ui.unit.dp
 import io.github.lemcoder.koogedge.R
 
 @Composable
-fun ChatScreen(
-    state: ChatState,
-    onEvent: (ChatEvent) -> Unit
-) {
+fun ChatScreen(state: ChatState, onEvent: (ChatEvent) -> Unit) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp)
-            .imePadding(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = Modifier.fillMaxSize().padding(8.dp).imePadding(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
             text = stringResource(R.string.chat),
             style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .padding(vertical = 8.dp)
-        ) {
+        LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f).padding(vertical = 8.dp)) {
             items(state.messages, key = { it.id }) {
                 val color =
                     if (it.isUser) MaterialTheme.colorScheme.surface
@@ -59,34 +48,26 @@ fun ChatScreen(
                 Text(
                     text = it.content,
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(color)
-                        .padding(8.dp)
-                        .clip(RoundedCornerShape(8.dp))
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .background(color)
+                            .padding(8.dp)
+                            .clip(RoundedCornerShape(8.dp)),
                 )
             }
 
             if (state.isLoading) {
-                item {
-                    CircularProgressIndicator()
-                }
+                item { CircularProgressIndicator() }
             }
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        Row(modifier = Modifier.fillMaxWidth()) {
             var message by remember { mutableStateOf("") }
             OutlinedTextField(
                 value = message,
-                onValueChange = {
-                    message = it
-                },
-                placeholder = {
-                    Text(stringResource(R.string.enter_message))
-                },
-                modifier = Modifier.weight(1f)
+                onValueChange = { message = it },
+                placeholder = { Text(stringResource(R.string.enter_message)) },
+                modifier = Modifier.weight(1f),
             )
 
             val keyboardController = LocalSoftwareKeyboardController.current
@@ -96,8 +77,7 @@ fun ChatScreen(
                     message = ""
                     keyboardController?.hide()
                 },
-                modifier = Modifier
-                    .padding(4.dp),
+                modifier = Modifier.padding(4.dp),
                 enabled = !state.isLoading && message.isNotBlank(),
             ) {
                 Text(text = "Send")

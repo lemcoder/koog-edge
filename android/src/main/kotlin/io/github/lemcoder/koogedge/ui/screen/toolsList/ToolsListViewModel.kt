@@ -14,11 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 class ToolsListViewModel(
     private val navigationService: NavigationService = NavigationService.Instance
 ) : MviViewModel<ToolsListState, ToolsListEvent>() {
-    private val _state = MutableStateFlow(
-        ToolsListState(
-            tools = allTools
-        )
-    )
+    private val _state = MutableStateFlow(ToolsListState(tools = allTools))
     override val state: StateFlow<ToolsListState> = _state.asStateFlow()
 
     override fun onEvent(event: ToolsListEvent) {

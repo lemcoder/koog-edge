@@ -25,41 +25,28 @@ class WeatherToolViewModel : MviViewModel<WeatherToolState, WeatherToolEvent>() 
 
     internal fun fetchWeather(cityName: String) {
         // Simulate fetching weather data
-        _state.update {
-            it.copy(isLoading = true, weatherInfo = null)
-        }
+        _state.update { it.copy(isLoading = true, weatherInfo = null) }
 
         viewModelScope.launch {
             val prompt = "What is the weather in: $cityName"
             try {
-                val agent = WeatherAgentProvider().provideAgent(
-                    onToolCallEvent = {
-                        Log.w(this@WeatherToolViewModel::class.simpleName, "Tool call: $it")
-                    },
-                    onErrorEvent = {
-                        SnackbarUtil.showSnackbar(
-                            "Error occurred: $it",
+                val agent =
+                    WeatherAgentProvider()
+                        .provideAgent(
+                            onToolCallEvent = {
+                                Log.w(this@WeatherToolViewModel::class.simpleName, "Tool call: $it")
+                            },
+                            onErrorEvent = { SnackbarUtil.showSnackbar("Error occurred: $it") },
+                            onAssistantMessage = {
+                                Log.w(this@WeatherToolViewModel::class.simpleName, "Assistant: $it")
+                                val explained = it
+                                _state.update { state -> state.copy(weatherInfo = explained) }
+                                explained
+                            },
                         )
-                    },
-                    onAssistantMessage = {
-                        Log.w(this@WeatherToolViewModel::class.simpleName, "Assistant: $it")
-                        val explained = it
-                        _state.update { state ->
-                            state.copy(
-                                weatherInfo = explained,
-                            )
-                        }
-                        explained
-                    }
-                )
                 val result = agent.run(prompt)
 
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        weatherInfo = result,
-                    )
-                }
+                _state.update { it.copy(isLoading = false, weatherInfo = result) }
             } catch (ex: Exception) {
                 // TODO handle errors
             }

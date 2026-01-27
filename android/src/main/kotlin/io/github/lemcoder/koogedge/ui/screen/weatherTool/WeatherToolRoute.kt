@@ -10,8 +10,5 @@ fun WeatherToolRoute() {
     val viewModel = viewModel { WeatherToolViewModel() }
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    WeatherToolScreen(
-        state = state,
-        onEvent = viewModel::onEvent
-    )
+    WeatherToolScreen(state = state, onEvent = viewModel::onEvent)
 }

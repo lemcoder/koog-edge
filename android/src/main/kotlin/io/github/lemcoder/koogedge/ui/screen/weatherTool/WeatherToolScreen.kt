@@ -22,58 +22,44 @@ import androidx.compose.ui.unit.dp
 import io.github.lemcoder.koogedge.R
 
 @Composable
-fun WeatherToolScreen(
-    state: WeatherToolState,
-    onEvent: (WeatherToolEvent) -> Unit
-) {
+fun WeatherToolScreen(state: WeatherToolState, onEvent: (WeatherToolEvent) -> Unit) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
             text = stringResource(R.string.weather_tool),
             style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
 
         var city by remember { mutableStateOf("London today") }
         OutlinedTextField(
             value = city,
-            onValueChange = {
-                city = it
-            },
-            placeholder = {
-                Text(stringResource(R.string.enter_city_name))
-            },
-            modifier = Modifier.fillMaxWidth()
+            onValueChange = { city = it },
+            placeholder = { Text(stringResource(R.string.enter_city_name)) },
+            modifier = Modifier.fillMaxWidth(),
         )
 
         if (state.weatherInfo?.isNotEmpty() == true && !state.isLoading) {
             Column(
-                modifier = Modifier
-                    .verticalScroll(rememberScrollState())
-                    .padding(vertical = 8.dp)
-                    .weight(1f)
+                modifier =
+                    Modifier.verticalScroll(rememberScrollState())
+                        .padding(vertical = 8.dp)
+                        .weight(1f)
             ) {
-                Text(
-                    text = state.weatherInfo,
-                )
+                Text(text = state.weatherInfo)
             }
         } else if (state.isLoading) {
             Text(
                 text = stringResource(R.string.loading),
-                modifier = Modifier
-                    .padding(vertical = 8.dp)
+                modifier = Modifier.padding(vertical = 8.dp),
             )
         }
 
         Button(
-            onClick = {
-                onEvent(WeatherToolEvent.OnSearchClick(city))
-            },
-            modifier = Modifier.fillMaxWidth()
+            onClick = { onEvent(WeatherToolEvent.OnSearchClick(city)) },
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Text(text = stringResource(R.string.get_weather))
         }

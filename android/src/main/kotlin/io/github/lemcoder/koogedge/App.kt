@@ -13,6 +13,7 @@ class App : Application() {
     companion object {
         internal lateinit var instance: App
             private set
+
         val context: Context by lazy { instance.applicationContext }
     }
 }

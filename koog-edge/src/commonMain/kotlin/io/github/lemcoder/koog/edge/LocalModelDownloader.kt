@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 interface LocalModelDownloader {
     /**
      * Downloads the specified local model and
+     *
      * @param model the model to download
      * @return a `Flow` emitting the download progress as a `Float` between 0.0 and 1.0.
      */

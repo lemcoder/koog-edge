@@ -26,20 +26,18 @@ internal class ChatAgentProvider : AgentProvider {
         val leapExecutor = SingleLLMPromptExecutor(getLeapLLMClient(modelsPath))
         val cactusExecutor = SingleLLMPromptExecutor(getCactusLLMClient(App.context))
 
-        @Suppress("DuplicatedCode")
-        val strategy = plainChatAgentStrategy()
+        @Suppress("DuplicatedCode") val strategy = plainChatAgentStrategy()
 
         // Create agent config with proper prompt
-        val agentConfig = AIAgentConfig(
-            prompt = prompt(
-                "test",
-                params = CactusLLMParams()
-            ) {
-                system("You are a helpful assistant.")
-            },
-            model = CactusModels.Chat.Qwen3_0_6B,
-            maxAgentIterations = 10,
-        )
+        val agentConfig =
+            AIAgentConfig(
+                prompt =
+                    prompt("test", params = CactusLLMParams()) {
+                        system("You are a helpful assistant.")
+                    },
+                model = CactusModels.Chat.Qwen3_0_6B,
+                maxAgentIterations = 10,
+            )
 
         return AIAgent(
             promptExecutor = cactusExecutor,
@@ -49,7 +47,8 @@ internal class ChatAgentProvider : AgentProvider {
     }
 }
 
-private fun plainChatAgentStrategy() = functionalStrategy<String, String>("Chat Agent") { input ->
-    val response = requestLLM(input, allowToolCalls = false)
-    return@functionalStrategy response.content
-}
+private fun plainChatAgentStrategy() =
+    functionalStrategy<String, String>("Chat Agent") { input ->
+        val response = requestLLM(input, allowToolCalls = false)
+        return@functionalStrategy response.content
+    }

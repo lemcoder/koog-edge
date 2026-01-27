@@ -5,9 +5,8 @@ import io.github.lemcoder.koog.edge.cactus.internal.CactusLocalLLMClient
 import io.github.lemcoder.koog.edge.cactus.internal.cactusModelLoader
 
 /**
- * A context type for Koog Edge on different platforms.
- * on Android, this could be android.content.Context
- * on iOS, this can be null
+ * A context type for Koog Edge on different platforms. on Android, this could be
+ * android.content.Context on iOS, this can be null
  */
 typealias KoogEdgeContext = Any?
 

@@ -7,5 +7,5 @@ sealed interface Destination {
 
     data object ToolsList : Destination
 
-    data object Chat: Destination
+    data object Chat : Destination
 }

@@ -8,6 +8,4 @@ class LeapLLMParams(
     val minP: Float? = null,
     val repetitionPenalty: Float? = null,
     val jsonSchemaConstraint: String? = null,
-) : LLMParams(
-    temperature = temperature?.toDouble(),
-)
+) : LLMParams(temperature = temperature?.toDouble())

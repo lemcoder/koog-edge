@@ -21,71 +21,49 @@ import androidx.compose.ui.unit.dp
 import io.github.lemcoder.koogedge.R
 
 @Composable
-fun ToolsListScreen(
-    state: ToolsListState,
-    onEvent: (ToolsListEvent) -> Unit
-) {
+fun ToolsListScreen(state: ToolsListState, onEvent: (ToolsListEvent) -> Unit) {
     Column {
         Text(
             text = stringResource(R.string.available_tools),
             style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
         )
 
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp),
+            modifier = Modifier.fillMaxSize().padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
+            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
         ) {
             items(state.tools, key = { it.id }) {
-                ToolListItem(
-                    item = it,
-                    onClick = {
-                        onEvent(
-                            ToolsListEvent.OnToolClick(
-                                it.id
-                            )
-                        )
-                    }
-                )
+                ToolListItem(item = it, onClick = { onEvent(ToolsListEvent.OnToolClick(it.id)) })
             }
         }
     }
 }
 
 @Composable
-private fun ToolListItem(
-    item: ToolsListState.ToolItem,
-    onClick: () -> Unit
-) {
+private fun ToolListItem(item: ToolsListState.ToolItem, onClick: () -> Unit) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainer)
-            .clickable(onClick = onClick)
-            .padding(16.dp),
+        modifier =
+            Modifier.fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.surfaceContainer)
+                .clickable(onClick = onClick)
+                .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(
             modifier = Modifier.weight(1f),
             horizontalAlignment = Alignment.Start,
-            verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+            verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
         ) {
             Text(
                 text = item.name,
                 modifier = Modifier.padding(bottom = 4.dp),
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
             )
 
-            Text(
-                text = item.description,
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Text(text = item.description, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }

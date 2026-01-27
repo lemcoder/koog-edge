@@ -7,20 +7,24 @@ import com.cactus.CactusInitParams
 import com.cactus.CactusLM
 import io.github.lemcoder.koog.edge.LocalModelLoader
 import io.github.lemcoder.koog.edge.log.KoogEdgeLog
-import kotlinx.coroutines.runBlocking
 import kotlin.toString
+import kotlinx.coroutines.runBlocking
 
-actual fun cactusModelLoader(context: Any?): LocalModelLoader<CactusLM?> = CactusModelLoader.apply {
-    if (context is Context) {
-        initializeIfNecessary(context)
-    } else {
-        KoogEdgeLog.error("CactusModelLoader initialization failed: context is not of type android.content.Context")
-        throw IllegalArgumentException("Expected Android Context for CactusModelLoader initialization")
+actual fun cactusModelLoader(context: Any?): LocalModelLoader<CactusLM?> =
+    CactusModelLoader.apply {
+        if (context is Context) {
+            initializeIfNecessary(context)
+        } else {
+            KoogEdgeLog.error(
+                "CactusModelLoader initialization failed: context is not of type android.content.Context"
+            )
+            throw IllegalArgumentException(
+                "Expected Android Context for CactusModelLoader initialization"
+            )
+        }
     }
-}
 
-internal object CactusModelLoader :
-    LocalModelLoader<CactusLM?> {
+internal object CactusModelLoader : LocalModelLoader<CactusLM?> {
     private var isInitialized = false
     private var lastLoadedModel: LLModel? = null
     private var lastCreatedExecutor: CactusLM? = null
@@ -40,17 +44,13 @@ internal object CactusModelLoader :
                 KoogEdgeLog.warning("Using cached Cactus model executor for model: ${model.id}")
                 return cached
             }
-            KoogEdgeLog.warning("Cached Cactus model executor is not loaded, creating a new one for model: ${model.id}")
+            KoogEdgeLog.warning(
+                "Cached Cactus model executor is not loaded, creating a new one for model: ${model.id}"
+            )
         }
 
-        val lm = CactusLM(
-            enableToolFiltering = false
-        )
-        lm.initializeModel(
-            CactusInitParams(
-                model = model.id
-            )
-        )
+        val lm = CactusLM(enableToolFiltering = false)
+        lm.initializeModel(CactusInitParams(model = model.id))
 
         lastCreatedExecutor = lm
         lastLoadedModel = model
