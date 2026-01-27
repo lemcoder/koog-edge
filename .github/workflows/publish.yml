@@ -29,6 +29,17 @@ jobs:
         with:
           xcode-version: latest-stable
 
+      - name: Build XCFramework
+        run: |
+          chmod 777 ./gradlew
+          ./gradlew :koog-edge:assembleKoogEdgeKitXCFramework
+
+      - name: Package XCFramework
+        run: |
+          cd koog-edge/build/XCFrameworks/release
+          zip -r KoogEdgeKit.xcframework.zip KoogEdgeKit.xcframework
+          swift package compute-checksum KoogEdgeKit.xcframework.zip > checksum.txt
+
       - name: Publish To Maven Central
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
@@ -36,5 +47,14 @@ jobs:
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: |
-          chmod 777 ./gradlew
           ./gradlew koog-edge:publishAndReleaseToMavenCentral --no-configuration-cache
+
+      - name: Upload XCFramework to Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            koog-edge/build/XCFrameworks/release/KoogEdgeKit.xcframework.zip
+            koog-edge/build/XCFrameworks/release/checksum.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

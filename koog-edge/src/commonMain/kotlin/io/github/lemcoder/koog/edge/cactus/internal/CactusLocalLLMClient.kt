@@ -25,13 +25,11 @@ import io.github.lemcoder.koog.edge.log.KoogEdgeLog
 import io.github.lemcoder.koog.edge.provider.LocalLLMProvider
 import kotlinx.datetime.Clock
 
-class CactusLocalLLMClient(
-    private val modelLoader: LocalModelLoader<CactusLM?>
-) : LLMClient {
+class CactusLocalLLMClient(private val modelLoader: LocalModelLoader<CactusLM?>) : LLMClient {
     override suspend fun execute(
         prompt: Prompt,
         model: LLModel,
-        tools: List<ToolDescriptor>
+        tools: List<ToolDescriptor>,
     ): List<Message.Response> {
         KoogEdgeLog.w { "Executing prompt: $prompt with tools: $tools and model: $model" }
         require(model.capabilities.contains(LLMCapability.Completion)) {
@@ -41,42 +39,30 @@ class CactusLocalLLMClient(
             "Model ${model.id} does not support tools"
         }
 
-        val cactusModel = getCactusLLMModelById(model.id)
-            ?: error("Model ${model.id} is not supported by Cactus compute")
+        val cactusModel =
+            getCactusLLMModelById(model.id)
+                ?: error("Model ${model.id} is not supported by Cactus compute")
 
-        val modelRunner = modelLoader.loadModel(cactusModel)
-            ?: error("Failed to load model ${model.id}")
+        val modelRunner =
+            modelLoader.loadModel(cactusModel) ?: error("Failed to load model ${model.id}")
 
         val history = prompt.messages.map(koogToCactusMessageConverter::convert)
         val params = prompt.params as? CactusLLMParams
 
-        val cactusTools = tools.map(koogToCactusToolConverter::convert).also {
-            it.forEach { tool ->
-                KoogEdgeLog.w { "Registering: $tool" }
+        val cactusTools =
+            tools.map(koogToCactusToolConverter::convert).also {
+                it.forEach { tool -> KoogEdgeLog.w { "Registering: $tool" } }
             }
-        }
 
-        var cactusResult = runCactusInference(
-            model,
-            modelRunner,
-            history,
-            params,
-            cactusTools
-        )
+        var cactusResult = runCactusInference(model, modelRunner, history, params, cactusTools)
         while (cactusResult == null || !cactusResult.success) {
             KoogEdgeLog.w { "Cactus inference failed, retrying" }
-            cactusResult = runCactusInference(
-                model,
-                modelRunner,
-                history,
-                params,
-                cactusTools
-            )
+            cactusResult = runCactusInference(model, modelRunner, history, params, cactusTools)
         }
 
-
-        val toolCalls = cactusResult.toolCalls?.map(cactusToKoogToolCallResponseConverter::convert)
-            ?: emptyList()
+        val toolCalls =
+            cactusResult.toolCalls?.map(cactusToKoogToolCallResponseConverter::convert)
+                ?: emptyList()
         val responseText = cactusResult.response ?: ""
 
         if (responseText.isEmpty()) {
@@ -86,21 +72,17 @@ class CactusLocalLLMClient(
                 return toolCalls
             }
             KoogEdgeLog.error("Model returned empty response. Frames: $toolCalls")
-            throw IllegalStateException("Model returned empty response. Check input prompt and model configuration.")
+            throw IllegalStateException(
+                "Model returned empty response. Check input prompt and model configuration."
+            )
         }
 
-        val result = Message.Assistant(
-            content = responseText,
-            metaInfo = ResponseMetaInfo.Empty,
-        )
+        val result = Message.Assistant(content = responseText, metaInfo = ResponseMetaInfo.Empty)
 
         return listOf(result) + toolCalls
     }
 
-    override suspend fun moderate(
-        prompt: Prompt,
-        model: LLModel
-    ): ModerationResult {
+    override suspend fun moderate(prompt: Prompt, model: LLModel): ModerationResult {
         TODO("Not yet implemented")
     }
 
@@ -111,25 +93,26 @@ class CactusLocalLLMClient(
         modelRunner: CactusLM,
         history: List<ChatMessage>,
         params: CactusLLMParams?,
-        cactusTools: List<CactusTool>
+        cactusTools: List<CactusTool>,
     ): CactusCompletionResult? {
         val defaultParams = CactusCompletionParams()
         return modelRunner.generateCompletion(
             messages = history,
-            params = CactusCompletionParams(
-                model = model.id,
-                temperature = params?.temperature ?: defaultParams.temperature,
-                topK = params?.topK ?: defaultParams.topK,
-                topP = params?.topP ?: defaultParams.topP,
-                maxTokens = params?.maxTokens ?: defaultParams.maxTokens,
-                stopSequences = params?.stopSequences ?: defaultParams.stopSequences,
-                cactusToken = params?.cactusToken ?: defaultParams.cactusToken,
-                tools = cactusTools,
-                mode = params?.inferenceMode ?: InferenceMode.LOCAL_FIRST
-            ),
+            params =
+                CactusCompletionParams(
+                    model = model.id,
+                    temperature = params?.temperature ?: defaultParams.temperature,
+                    topK = params?.topK ?: defaultParams.topK,
+                    topP = params?.topP ?: defaultParams.topP,
+                    maxTokens = params?.maxTokens ?: defaultParams.maxTokens,
+                    stopSequences = params?.stopSequences ?: defaultParams.stopSequences,
+                    cactusToken = params?.cactusToken ?: defaultParams.cactusToken,
+                    tools = cactusTools,
+                    mode = params?.inferenceMode ?: InferenceMode.LOCAL_FIRST,
+                ),
             onToken = { token, tokenId ->
                 // Used in streaming only
-            }
+            },
         )
     }
 

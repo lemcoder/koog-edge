@@ -1,7 +1,7 @@
-import com.vanniktech.maven.publish.SonatypeHost
+import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
-    alias(libs.plugins.android.library)
+    alias(libs.plugins.android.kmp.library)
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.maven.publish)
     signing
@@ -22,32 +22,35 @@ kotlin {
         withDeviceTestBuilder {
             sourceSetTreeName = "test"
         }.configure {}
-
-//        buildTypes {
-//            release {
-//                isMinifyEnabled = false
-//                proguardFiles(
-//                    getDefaultProguardFile("proguard-android-optimize.txt"),
-//                    "proguard-rules.pro"
-//                )
-//            }
-//        }
     }
 
-    iosArm64()
+    // Name of the module to be imported in the consumer project
+    val xcframeworkName = "KoogEdgeKit"
+    val xcf = XCFramework(xcframeworkName)
+
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64(),
+    ).forEach {
+        it.binaries.framework {
+            baseName = xcframeworkName
+            
+            // Specify CFBundleIdentifier to uniquely identify the framework
+            binaryOption("bundleId", "io.github.lemcoder.${xcframeworkName}")
+            xcf.add(this)
+            isStatic = true
+        }
+    }
 
     sourceSets {
         commonMain.dependencies {
             implementation(libs.cactus)
             implementation(libs.koog.agents.core)
+            implementation(libs.leap.sdk)
         }
 
         commonTest.dependencies {
             implementation(libs.kotlin.test)
-        }
-
-        androidMain.dependencies {
-            implementation(libs.leap.sdk)
         }
     }
 }
@@ -59,15 +62,13 @@ publishing {
 }
 
 mavenPublishing {
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    publishToMavenCentral()
 
     coordinates(
         groupId = group.toString(),
         artifactId = "koog-edge",
         version = version.toString()
     )
-
-    println(SonatypeHost.DEFAULT.toString())
 
     pom {
         name.set("Koog Edge")

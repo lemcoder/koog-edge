@@ -10,8 +10,7 @@ actual fun cactusModelLoader(context: Any?): LocalModelLoader<CactusLM?> {
     return CactusModelLoader
 }
 
-internal object CactusModelLoader :
-    LocalModelLoader<CactusLM?> {
+internal object CactusModelLoader : LocalModelLoader<CactusLM?> {
     private var lastLoadedModel: LLModel? = null
     private var lastCreatedExecutor: CactusLM? = null
 
@@ -24,17 +23,13 @@ internal object CactusModelLoader :
                 KoogEdgeLog.warning("Using cached Cactus model executor for model: ${model.id}")
                 return cached
             }
-            KoogEdgeLog.warning("Cached Cactus model executor is not loaded, creating a new one for model: ${model.id}")
+            KoogEdgeLog.warning(
+                "Cached Cactus model executor is not loaded, creating a new one for model: ${model.id}"
+            )
         }
 
-        val lm = CactusLM(
-            enableToolFiltering = false
-        )
-        lm.initializeModel(
-            CactusInitParams(
-                model = model.id
-            )
-        )
+        val lm = CactusLM(enableToolFiltering = false)
+        lm.initializeModel(CactusInitParams(model = model.id))
 
         lastCreatedExecutor = lm
         lastLoadedModel = model

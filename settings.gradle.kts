@@ -20,5 +20,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "koog-edge"
-include(":app")
+include(":android")
 include(":koog-edge")
