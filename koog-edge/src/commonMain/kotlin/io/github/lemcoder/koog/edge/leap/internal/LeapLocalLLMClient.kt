@@ -15,7 +15,6 @@ import io.github.lemcoder.koog.edge.leap.internal.converter.koogToLeapParameters
 import io.github.lemcoder.koog.edge.leap.internal.converter.leapFunctionConverter
 import io.github.lemcoder.koog.edge.leap.internal.converter.koogToLeapMessageConverter
 import io.github.lemcoder.koog.edge.leap.internal.converter.messageResponseToStreamFrameConverter
-import io.github.lemcoder.koog.edge.log.AndroidEdgeLogger
 import io.github.lemcoder.koog.edge.log.KoogEdgeLog
 import io.github.lemcoder.koog.edge.provider.LocalLLMProvider
 import kotlinx.coroutines.coroutineScope

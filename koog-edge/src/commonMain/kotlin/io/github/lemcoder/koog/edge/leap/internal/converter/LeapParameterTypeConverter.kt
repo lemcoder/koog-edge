@@ -3,6 +3,7 @@ package io.github.lemcoder.koog.edge.leap.internal.converter
 import ai.koog.agents.core.tools.ToolParameterType
 import ai.liquid.leap.function.LeapFunctionParameterType
 import ai.liquid.leap.function.LeapFunctionParameterType.*
+import ai.liquid.leap.function.LeapNull
 import io.github.lemcoder.koog.edge.util.Converter
 
 internal val leapParameterTypeConverter =
@@ -12,22 +13,22 @@ internal val leapParameterTypeConverter =
 
 private fun ToolParameterType.toLeapFunctionParameterType(): LeapFunctionParameterType =
     when (this) {
-        ToolParameterType.Boolean -> Boolean()
-        is ToolParameterType.Enum -> String(
+        ToolParameterType.Boolean -> LeapBool()
+        is ToolParameterType.Enum -> LeapStr(
             enumValues = entries.toList()
         )
-        ToolParameterType.Float -> LeapFunctionParameterType.Number()
-        ToolParameterType.Integer -> Integer()
-        is ToolParameterType.List -> Array(
+        ToolParameterType.Float -> LeapNum()
+        ToolParameterType.Integer -> LeapNum()
+        is ToolParameterType.List -> LeapArr(
             itemType = itemsType.toLeapFunctionParameterType(),
         )
 
-        is ToolParameterType.Object -> Object(
+        is ToolParameterType.Object -> LeapObj(
             properties = properties.associate { it.name to it.type.toLeapFunctionParameterType() },
             required = requiredProperties,
         )
 
-        ToolParameterType.String -> LeapFunctionParameterType.String()
-        ToolParameterType.Null -> Null()
+        ToolParameterType.String -> LeapStr()
+        ToolParameterType.Null -> LeapNull
         is ToolParameterType.AnyOf -> throw UnsupportedOperationException("Leap does not support ToolParameterType.AnyOf")
-    }
+    } as LeapFunctionParameterType

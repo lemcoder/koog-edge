@@ -57,7 +57,7 @@ dependencies {
     implementation(libs.koog.agents)
     implementation(libs.leap.sdk)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(project(":koog-edge"))
+    implementation(libs.koog.edge)
     implementation(libs.kotlinx.serialization.core)
     implementation(libs.kotlinx.serialization.json)
 }

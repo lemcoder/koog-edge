@@ -16,9 +16,7 @@ import io.github.lemcoder.koog.edge.cactus.getCactusLLMClient
 import io.github.lemcoder.koog.edge.leap.getLeapLLMClient
 import io.github.lemcoder.koogedge.App
 import io.github.lemcoder.koogedge.agents.common.AgentProvider
-import io.github.lemcoder.koogedge.agents.common.ExitTool
 import io.github.lemcoder.koogedge.agents.common.modelsPath
-import kotlinx.datetime.Clock
 
 /**
  * Factory for creating weather forecast agents
