@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
+
 plugins {
     alias(libs.plugins.android.kmp.library)
     alias(libs.plugins.kotlin.multiplatform)
@@ -22,7 +24,23 @@ kotlin {
         }.configure {}
     }
 
-    iosArm64()
+    // Name of the module to be imported in the consumer project
+    val xcframeworkName = "KoogEdgeKit"
+    val xcf = XCFramework(xcframeworkName)
+
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64(),
+    ).forEach {
+        it.binaries.framework {
+            baseName = xcframeworkName
+            
+            // Specify CFBundleIdentifier to uniquely identify the framework
+            binaryOption("bundleId", "io.github.lemcoder.${xcframeworkName}")
+            xcf.add(this)
+            isStatic = true
+        }
+    }
 
     sourceSets {
         commonMain.dependencies {
