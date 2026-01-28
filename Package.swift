@@ -12,7 +12,7 @@ let package = Package(
    targets: [
       .binaryTarget(
          name: "KoogEdgeKit",
-         url: "https://github.com/lemcoder/koog-edge/releases/download/<VERSION>/KoogEdgeKit.xcframework.zip",
-         checksum: "<CHECKSUM>")
+         url: "https://github.com/lemcoder/koog-edge/releases/download/0.0.3/KoogEdgeKit.xcframework.zip",
+         checksum: "695ce686ce8b77c3433e92b416567236db9146817551b8a7a98e2021efb83d66")
    ]
 )
