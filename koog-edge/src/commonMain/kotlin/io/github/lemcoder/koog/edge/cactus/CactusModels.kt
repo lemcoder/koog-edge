@@ -52,7 +52,7 @@ import io.github.lemcoder.koog.edge.provider.LocalLLMProvider
  * isDownloaded=false, quantization=8)
  */
 sealed interface CactusModels : LocalModel {
-    data object Chat : LocalModel {
+    data object Chat : CactusModels {
         val FunctionGemma_270M =
             LLModel(
                 provider = LocalLLMProvider,
@@ -140,6 +140,25 @@ sealed interface CactusModels : LocalModel {
                 capabilities = listOf(LLMCapability.Tools, LLMCapability.Completion),
                 contextLength = 16_384,
             )
+        private var customModels: List<LLModel> = emptyList()
+        override val models: List<LLModel>
+            get() = listOf(
+                FunctionGemma_270M,
+                LFM2_1_2B_Tool,
+                Qwen3_0_6B,
+                Qwen3_1_7B,
+                LFM2_1_2B,
+                LFM2_1_2B_RAG,
+                LFM2_350M,
+                LFM2_700M,
+                Qwen3_0_6B_Pro,
+                Qwen3_1_7B_Pro,
+                FunctionGemma_270M_Pro,
+            ) + customModels
+
+        override fun addCustomModel(model: LLModel) {
+            customModels = customModels + model
+        }
     }
 }
 

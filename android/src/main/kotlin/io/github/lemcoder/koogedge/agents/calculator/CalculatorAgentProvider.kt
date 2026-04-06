@@ -12,6 +12,7 @@ import android.util.Log
 import io.github.lemcoder.koog.edge.cactus.CactusLLMParams
 import io.github.lemcoder.koog.edge.cactus.CactusModels
 import io.github.lemcoder.koog.edge.cactus.getCactusLLMClient
+import io.github.lemcoder.koog.edge.leap.LeapModels
 import io.github.lemcoder.koog.edge.leap.getLeapLLMClient
 import io.github.lemcoder.koogedge.App
 import io.github.lemcoder.koogedge.agents.common.AgentProvider
@@ -75,12 +76,12 @@ internal class CalculatorAgentProvider : AgentProvider {
                     prompt("test", params = CactusLLMParams(maxTokens = 512)) {
                         system(calculatorSystemPrompt)
                     },
-                model = CactusModels.Chat.Qwen3_0_6B,
+                model = LeapModels.Chat.LFM2_1_2B_Instruct,
                 maxAgentIterations = 10,
             )
 
         return AIAgent(
-            promptExecutor = cactusExecutor,
+            promptExecutor = leapExecutor,
             strategy = strategy,
             agentConfig = agentConfig,
             toolRegistry = toolRegistry,

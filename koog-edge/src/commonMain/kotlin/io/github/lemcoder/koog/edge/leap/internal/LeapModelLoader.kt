@@ -15,6 +15,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.io.files.Path
+import kotlinx.io.files.SystemFileSystem
 
 internal class LeapModelLoader(
     private val modelsPath: String,
@@ -29,6 +31,10 @@ internal class LeapModelLoader(
     override suspend fun loadModel(model: LLModel): ModelRunner? =
         withContext(Dispatchers.IO) {
             mutex.withLock {
+                val modelPath = "${modelsPath}/${model.id}"
+                KoogEdgeLog.w { "Loading model ${model.id} from path: $model at $modelPath" }
+                SystemFileSystem.delete(Path(modelPath), false)
+
                 if (loadingJob?.isActive == true) {
                     throw IllegalStateException("A model is already loading")
                 }
@@ -37,10 +43,11 @@ internal class LeapModelLoader(
                     try {
                         currentRunner =
                             downloader.loadModel(
-                                modelSlug = model.id,
+                                modelName = model.id,
                                 quantizationSlug =
-                                    "Q_4_0", // Load 4-bit quantized models by default
+                                    "Q4_K_M", // Load 4-bit quantized models by default
                                 modelLoadingOptions = options,
+                                forceDownload = true
                             )
                     } catch (e: LeapModelLoadingException) {
                         KoogEdgeLog.error("Error loading model: ${e.message}", e)

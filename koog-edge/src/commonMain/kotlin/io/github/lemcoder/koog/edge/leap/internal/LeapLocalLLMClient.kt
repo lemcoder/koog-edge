@@ -4,9 +4,11 @@ import ai.koog.agents.core.tools.ToolDescriptor
 import ai.koog.prompt.dsl.ModerationResult
 import ai.koog.prompt.dsl.Prompt
 import ai.koog.prompt.executor.clients.LLMClient
+import ai.koog.prompt.executor.clients.LLMClientAPI
 import ai.koog.prompt.llm.LLMCapability
 import ai.koog.prompt.llm.LLMProvider
 import ai.koog.prompt.llm.LLModel
+import ai.koog.prompt.message.ContentPart
 import ai.koog.prompt.message.Message
 import ai.koog.prompt.message.ResponseMetaInfo
 import ai.koog.prompt.streaming.StreamFrame
@@ -21,19 +23,19 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
-internal open class LeapLocalLLMClient(private val modelLoader: LeapModelLoader) : LLMClient {
+internal class LeapLocalLLMClient(private val modelLoader: LeapModelLoader) : LLMClient() {
     override suspend fun execute(
         prompt: Prompt,
         model: LLModel,
         tools: List<ToolDescriptor>,
     ): List<Message.Response> {
         KoogEdgeLog.w { "Executing prompt: $prompt with tools: $tools and model: $model" }
-        require(model.capabilities.contains(LLMCapability.Completion)) {
+        require(model.capabilities?.contains(LLMCapability.Completion) == true) {
             "Model ${model.id} does not support chat completions"
         }
-        require(model.capabilities.contains(LLMCapability.Tools) || tools.isEmpty()) {
+        require(model.capabilities?.contains(LLMCapability.Tools) == true || tools.isEmpty()) {
             "Model ${model.id} does not support tools"
         }
 
@@ -74,10 +76,23 @@ internal open class LeapLocalLLMClient(private val modelLoader: LeapModelLoader)
                     frames.forEach { frame ->
                         KoogEdgeLog.warning("Received frame: $frame")
                         when (frame) {
-                            is StreamFrame.Append -> responseText.append(frame.text)
                             is StreamFrame.End -> finishReason = frame.finishReason
-                            is StreamFrame.ToolCall ->
-                                toolCalls.add(frame.toMessageResponse() as Message.Tool.Call)
+                            is StreamFrame.TextComplete -> responseText.append(frame.text)
+                            is StreamFrame.TextDelta -> responseText.append(frame.text)
+                            is StreamFrame.ToolCallComplete -> {
+                                toolCalls +=
+                                    Message.Tool.Call(
+                                        id = frame.id,
+                                        tool = frame.name,
+                                        content = frame.content,
+                                        metaInfo = ResponseMetaInfo.create(Clock.System),
+                                    )
+                            }
+                            is StreamFrame.ReasoningComplete,
+                            is StreamFrame.ReasoningDelta,
+                            is StreamFrame.ToolCallDelta -> {
+                                // Ignored for now in non-streaming execute() aggregation.
+                            }
                         }
                     }
                 }
@@ -113,10 +128,10 @@ internal open class LeapLocalLLMClient(private val modelLoader: LeapModelLoader)
         tools: List<ToolDescriptor>,
     ): Flow<StreamFrame> = flow {
         KoogEdgeLog.w { "Executing prompt: $prompt with tools: $tools and model: $model" }
-        require(model.capabilities.contains(LLMCapability.Completion)) {
+        require(model.capabilities?.contains(LLMCapability.Completion) == true) {
             "Model ${model.id} does not support chat completions"
         }
-        require(model.capabilities.contains(LLMCapability.Tools) || tools.isEmpty()) {
+        require(model.capabilities?.contains(LLMCapability.Tools) == true || tools.isEmpty()) {
             "Model ${model.id} does not support tools"
         }
         val leapLLModel = getLeapLLModelById(model.id)
@@ -161,18 +176,36 @@ internal open class LeapLocalLLMClient(private val modelLoader: LeapModelLoader)
 private fun StreamFrame.toMessageResponse(): Message.Response {
     val metaInfo = ResponseMetaInfo(timestamp = Clock.System.now())
     return when (this) {
-        is StreamFrame.Append ->
-            Message.Assistant(content = this.text, metaInfo = metaInfo, finishReason = "")
-
-        is StreamFrame.End ->
-            Message.Assistant(content = "", metaInfo = metaInfo, finishReason = this.finishReason)
-
-        is StreamFrame.ToolCall ->
-            Message.Tool.Call(
-                id = this.id,
-                tool = this.name,
-                content = this.content,
+        is StreamFrame.ReasoningComplete ->
+            Message.Reasoning(
+                encrypted = encrypted,
+                parts = text.map { ContentPart.Text(it) },
+                summary = summary?.map { ContentPart.Text(it) },
                 metaInfo = metaInfo,
             )
+
+        is StreamFrame.TextComplete -> Message.Assistant(content = text, metaInfo = metaInfo)
+
+        is StreamFrame.ToolCallComplete ->
+            Message.Tool.Call(id = id, tool = name, content = content, metaInfo = metaInfo)
+
+        is StreamFrame.ReasoningDelta ->
+            Message.Reasoning(
+                parts = listOf(ContentPart.Text(text.orEmpty())),
+                summary = summary?.let { listOf(ContentPart.Text(it)) },
+                metaInfo = metaInfo,
+            )
+
+        is StreamFrame.TextDelta -> Message.Assistant(content = text, metaInfo = metaInfo)
+
+        is StreamFrame.ToolCallDelta ->
+            Message.Tool.Call(
+                id = id,
+                tool = name.orEmpty(),
+                content = content.orEmpty(),
+                metaInfo = metaInfo,
+            )
+
+        is StreamFrame.End -> Message.Assistant(content = "", metaInfo = metaInfo, finishReason = finishReason)
     }
 }

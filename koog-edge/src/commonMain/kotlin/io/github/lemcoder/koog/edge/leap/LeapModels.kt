@@ -6,7 +6,7 @@ import io.github.lemcoder.koog.edge.LocalModel
 import io.github.lemcoder.koog.edge.provider.LocalLLMProvider
 
 sealed interface LeapModels : LocalModel {
-    data object Chat : LocalModel {
+    data object Chat : LeapModels {
         val LFM2_1_2B_Tool =
             LLModel(
                 provider = LocalLLMProvider,
@@ -30,6 +30,13 @@ sealed interface LeapModels : LocalModel {
                 capabilities = listOf(LLMCapability.Tools, LLMCapability.Completion),
                 contextLength = 32_768,
             )
+        private var customModels: List<LLModel> = emptyList()
+        override val models: List<LLModel>
+            get() = listOf(LFM2_1_2B_Tool, LFM2_1_2B_Instruct, LFM2_1_2B_Thinking) + customModels
+
+        override fun addCustomModel(model: LLModel) {
+            customModels = customModels + model
+        }
     }
 }
 
