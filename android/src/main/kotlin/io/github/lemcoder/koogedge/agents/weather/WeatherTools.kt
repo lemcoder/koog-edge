@@ -2,23 +2,20 @@ package io.github.lemcoder.koogedge.agents.weather
 
 import ai.koog.agents.core.tools.Tool
 import ai.koog.agents.core.tools.annotations.LLMDescription
-import kotlinx.datetime.Clock
-import kotlinx.datetime.DateTimePeriod
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.offsetAt
-import kotlinx.datetime.plus
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 /** Tools for the weather agent */
 object WeatherTools {
     private val openMeteoClient = OpenMeteoClient()
 
-    private val UTC_ZONE = TimeZone.UTC
+    private val UTC_ZONE: ZoneId = ZoneOffset.UTC
 
     /** Granularity options for weather forecasts */
     @Serializable
@@ -54,25 +51,18 @@ object WeatherTools {
         override suspend fun execute(args: Args): Result {
             val zoneId =
                 try {
-                    TimeZone.of(args.timezone)
+                    ZoneId.of(args.timezone)
                 } catch (_: Exception) {
                     UTC_ZONE
                 }
 
-            val now = Clock.System.now()
-            val localDateTime = now.toLocalDateTime(zoneId)
-            val offset = zoneId.offsetAt(now)
-
-            val time = localDateTime.time
-            val timeStr =
-                "${time.hour.toString().padStart(2, '0')}:${
-                time.minute.toString().padStart(2, '0')
-            }:${time.second.toString().padStart(2, '0')}"
+            val now = ZonedDateTime.now(zoneId)
+            val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 
             return Result(
-                datetime = "${localDateTime.date}T$timeStr$offset",
-                date = localDateTime.date.toString(),
-                time = timeStr,
+                datetime = now.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                date = now.toLocalDate().toString(),
+                time = now.toLocalTime().format(timeFormatter),
                 timezone = zoneId.id,
             )
         }
@@ -112,25 +102,21 @@ object WeatherTools {
                         LocalDate.parse(args.date)
                     } catch (_: Exception) {
                         // Use current date if parsing fails
-                        Clock.System.now().toLocalDateTime(UTC_ZONE).date
+                        LocalDate.now(UTC_ZONE)
                     }
                 } else {
-                    Clock.System.now().toLocalDateTime(UTC_ZONE).date
+                    LocalDate.now(UTC_ZONE)
                 }
 
-            // Convert to LocalDateTime to handle hours and minutes
-            val baseDateTime =
-                LocalDateTime(baseDate.year, baseDate.month, baseDate.dayOfMonth, 0, 0)
-            val baseInstant = baseDateTime.toInstant(UTC_ZONE)
-
-            val period =
-                DateTimePeriod(days = args.days, hours = args.hours, minutes = args.minutes)
-
-            val newInstant = baseInstant.plus(period, UTC_ZONE)
-            val resultDate = newInstant.toLocalDateTime(UTC_ZONE).date.toString()
+            val baseDateTime = baseDate.atStartOfDay(UTC_ZONE)
+            val resultDateTime =
+                baseDateTime
+                    .plusDays(args.days.toLong())
+                    .plusHours(args.hours.toLong())
+                    .plusMinutes(args.minutes.toLong())
 
             return Result(
-                date = resultDate,
+                date = resultDateTime.toLocalDate().toString(),
                 originalDate = args.date,
                 daysAdded = args.days,
                 hoursAdded = args.hours,
@@ -167,7 +153,7 @@ object WeatherTools {
         )
 
         override suspend fun execute(args: Args): Result {
-            val date = Clock.System.now().toString()
+            val date = Instant.now().toString()
             // Search for the location
             val locations = openMeteoClient.searchLocation(args.location)
             if (locations.isEmpty()) {
@@ -206,7 +192,7 @@ object WeatherTools {
             val daily = forecast.daily ?: return "No daily forecast data available"
 
             val startDate =
-                date.ifBlank { Clock.System.now().toLocalDateTime(UTC_ZONE).date.toString() }
+                date.ifBlank { LocalDate.now(UTC_ZONE).toString() }
 
             val startIndex = daily.time.indexOfFirst { it >= startDate }.coerceAtLeast(0)
 
