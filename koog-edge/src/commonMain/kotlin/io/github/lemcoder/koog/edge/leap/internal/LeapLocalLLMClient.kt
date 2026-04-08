@@ -4,7 +4,6 @@ import ai.koog.agents.core.tools.ToolDescriptor
 import ai.koog.prompt.dsl.ModerationResult
 import ai.koog.prompt.dsl.Prompt
 import ai.koog.prompt.executor.clients.LLMClient
-import ai.koog.prompt.executor.clients.LLMClientAPI
 import ai.koog.prompt.llm.LLMCapability
 import ai.koog.prompt.llm.LLMProvider
 import ai.koog.prompt.llm.LLModel
@@ -19,11 +18,11 @@ import io.github.lemcoder.koog.edge.leap.internal.converter.leapFunctionConverte
 import io.github.lemcoder.koog.edge.leap.internal.converter.messageResponseToStreamFrameConverter
 import io.github.lemcoder.koog.edge.log.KoogEdgeLog
 import io.github.lemcoder.koog.edge.provider.LocalLLMProvider
+import kotlin.time.Clock
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
-import kotlin.time.Clock
 
 internal class LeapLocalLLMClient(private val modelLoader: LeapModelLoader) : LLMClient() {
     override suspend fun execute(
@@ -206,6 +205,7 @@ private fun StreamFrame.toMessageResponse(): Message.Response {
                 metaInfo = metaInfo,
             )
 
-        is StreamFrame.End -> Message.Assistant(content = "", metaInfo = metaInfo, finishReason = finishReason)
+        is StreamFrame.End ->
+            Message.Assistant(content = "", metaInfo = metaInfo, finishReason = finishReason)
     }
 }

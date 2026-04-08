@@ -5,12 +5,12 @@ import ai.koog.prompt.message.ResponseMetaInfo
 import com.cactus.ChatMessage
 import com.cactus.ToolCall
 import io.github.lemcoder.koog.edge.util.Converter
+import kotlin.time.Clock
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import kotlin.time.Clock
 
 @OptIn(ExperimentalUuidApi::class)
 internal val cactusToKoogToolCallResponseConverter =

@@ -7,7 +7,6 @@ import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.executor.llms.SingleLLMPromptExecutor
 import ai.koog.prompt.message.Message
-import io.github.lemcoder.koog.edge.cactus.CactusModels
 import io.github.lemcoder.koog.edge.cactus.getCactusLLMClient
 import io.github.lemcoder.koog.edge.leap.LeapModels
 import io.github.lemcoder.koog.edge.leap.getLeapLLMClient

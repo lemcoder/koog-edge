@@ -47,7 +47,7 @@ internal class LeapModelLoader(
                                 quantizationSlug =
                                     "Q4_K_M", // Load 4-bit quantized models by default
                                 modelLoadingOptions = options,
-                                forceDownload = true
+                                forceDownload = true,
                             )
                     } catch (e: LeapModelLoadingException) {
                         KoogEdgeLog.error("Error loading model: ${e.message}", e)

@@ -10,7 +10,6 @@ import ai.koog.prompt.executor.llms.SingleLLMPromptExecutor
 import ai.koog.prompt.message.Message
 import android.util.Log
 import io.github.lemcoder.koog.edge.cactus.CactusLLMParams
-import io.github.lemcoder.koog.edge.cactus.CactusModels
 import io.github.lemcoder.koog.edge.cactus.getCactusLLMClient
 import io.github.lemcoder.koog.edge.leap.LeapModels
 import io.github.lemcoder.koog.edge.leap.getLeapLLMClient

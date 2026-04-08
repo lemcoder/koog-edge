@@ -2,14 +2,14 @@ package io.github.lemcoder.koogedge.agents.weather
 
 import ai.koog.agents.core.tools.Tool
 import ai.koog.agents.core.tools.annotations.LLMDescription
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /** Tools for the weather agent */
 object WeatherTools {
@@ -191,8 +191,7 @@ object WeatherTools {
         private fun formatDailyForecast(forecast: WeatherForecast, date: String): String {
             val daily = forecast.daily ?: return "No daily forecast data available"
 
-            val startDate =
-                date.ifBlank { LocalDate.now(UTC_ZONE).toString() }
+            val startDate = date.ifBlank { LocalDate.now(UTC_ZONE).toString() }
 
             val startIndex = daily.time.indexOfFirst { it >= startDate }.coerceAtLeast(0)
 
