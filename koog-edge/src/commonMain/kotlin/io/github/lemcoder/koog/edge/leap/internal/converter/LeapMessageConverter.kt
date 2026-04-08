@@ -39,13 +39,13 @@ internal val koogToLeapMessageConverter =
 internal val messageResponseToStreamFrameConverter =
     Converter<MessageResponse, List<StreamFrame>> { response ->
         when (response) {
-            is MessageResponse.Chunk -> listOf(Append(text = response.text))
+            is MessageResponse.Chunk -> listOf(TextComplete(text = response.text))
 
             is MessageResponse.Complete -> listOf(End())
 
             is MessageResponse.FunctionCalls ->
                 response.functionCalls.map { firstCall ->
-                    ToolCall(
+                    ToolCallComplete(
                         id = null,
                         name = firstCall.name,
                         content = firstCall.arguments.toJsonObjectString(),

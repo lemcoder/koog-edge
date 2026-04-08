@@ -1,3 +1,5 @@
 package io.github.lemcoder.koogedge.agents.common
 
-const val modelsPath = "/tmp/models"
+import io.github.lemcoder.koogedge.App
+
+val modelsPath: String = App.context.filesDir.absolutePath

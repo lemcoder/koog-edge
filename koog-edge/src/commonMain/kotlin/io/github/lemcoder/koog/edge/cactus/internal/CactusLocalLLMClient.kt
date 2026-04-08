@@ -23,19 +23,19 @@ import io.github.lemcoder.koog.edge.cactus.internal.converter.koogToCactusMessag
 import io.github.lemcoder.koog.edge.cactus.internal.converter.koogToCactusToolConverter
 import io.github.lemcoder.koog.edge.log.KoogEdgeLog
 import io.github.lemcoder.koog.edge.provider.LocalLLMProvider
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
-class CactusLocalLLMClient(private val modelLoader: LocalModelLoader<CactusLM?>) : LLMClient {
+class CactusLocalLLMClient(private val modelLoader: LocalModelLoader<CactusLM?>) : LLMClient() {
     override suspend fun execute(
         prompt: Prompt,
         model: LLModel,
         tools: List<ToolDescriptor>,
     ): List<Message.Response> {
         KoogEdgeLog.w { "Executing prompt: $prompt with tools: $tools and model: $model" }
-        require(model.capabilities.contains(LLMCapability.Completion)) {
+        require(model.capabilities?.contains(LLMCapability.Completion) == true) {
             "Model ${model.id} does not support chat completions"
         }
-        require(model.capabilities.contains(LLMCapability.Tools) || tools.isEmpty()) {
+        require(model.capabilities?.contains(LLMCapability.Tools) == true || tools.isEmpty()) {
             "Model ${model.id} does not support tools"
         }
 
