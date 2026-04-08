@@ -1,6 +1,6 @@
 [versions]
 compileSdk = "36"
-koogEdge = "0.0.3"
+koogEdge = "0.0.4"
 minSdk = "31"
 
 agp = "9.1.0"
